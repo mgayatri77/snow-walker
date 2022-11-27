@@ -20,15 +20,19 @@ const build2DArray = ( x: number, y:  number, defaultValue? : any) => {
 
 export const Grid= ({x, y}: GridProps) => {
     const blockXPercent = Math.floor(100/x);
-    const buildingXPercent = Math.floor(blockXPercent*0.8);
+    const buildingXPercent = Math.floor(blockXPercent*0.95);
     const roadXPercent =blockXPercent - buildingXPercent;
     const blockYPercent = Math.floor(100/y);
-    const buildingYPercent = Math.floor(blockYPercent*0.8);
+    const buildingYPercent = Math.floor(blockYPercent*0.95);
     const roadYPercent =blockYPercent - buildingYPercent;
 
-    const [intersectionState, setIntersectionState] = useState(build2DArray(x, y, 0));
-    const [verticalRoadState, setVerticalRoadState] = useState(build2DArray(x, y, 0));
-    const [horizontalRoadState, setHorizontalRoadState] = useState(build2DArray(x, y, 0));
+
+    console.log(`${buildingXPercent}% ${roadXPercent}%`)
+    console.log(`${buildingXPercent}% ${roadXPercent}%`)
+
+    const [intersectionState, setIntersectionState] = useState(build2DArray(x + 1, y + 1, 0));
+    const [verticalRoadState, setVerticalRoadState] = useState(build2DArray(x + 1, y + 1, 0));
+    const [horizontalRoadState, setHorizontalRoadState] = useState(build2DArray(x+1, y+1, 0));
 
     const building = (x_idx: number, y_idx : number) => (<div key={`building-${x_idx}-${y_idx}`} onClick={() => {}} style={{backgroundColor: "blue",}}/>);
     const verticalRoad = (x_idx: number, y_idx : number)  => (<div key={`vertical-road-${x_idx}-${y_idx}}`} 
@@ -36,8 +40,10 @@ export const Grid= ({x, y}: GridProps) => {
             verticalRoadState[x_idx][y_idx] ^= 1;
             if (verticalRoadState[x_idx][y_idx] === 1) {
                 intersectionState[x_idx][y_idx]++;
+                intersectionState[x_idx][y_idx - 1]++;
             } else {
                 intersectionState[x_idx][y_idx]--;
+                intersectionState[x_idx][y_idx - 1]--;
             }
             setVerticalRoadState([...verticalRoadState])
         }}
@@ -51,8 +57,10 @@ export const Grid= ({x, y}: GridProps) => {
             horizontalRoadState[x_idx][y_idx] ^= 1;
             if (horizontalRoadState[x_idx][y_idx] === 1) {
                 intersectionState[x_idx][y_idx]++;
+                intersectionState[x_idx - 1][y_idx]++;
             } else {
                 intersectionState[x_idx][y_idx]--;
+                intersectionState[x_idx - 1][y_idx]--;
             }
             setHorizontalRoadState([...horizontalRoadState])
         }} 
@@ -77,9 +85,9 @@ export const Grid= ({x, y}: GridProps) => {
                 rowRoad.push(intersection(i + 1, j + 1))
             }
         }
-        grid.push(( <div key={`grid-building-row-${i}`} style={{display: "inline-grid",  gridTemplateColumns: `repeat(${y}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowBuilding} </div> ))
+        grid.push(( <div key={`grid-building-row-${i}`} style={{display: "inline-grid",  gridTemplateColumns: `repeat(${y}, ${buildingYPercent}% ${roadYPercent}%)`}}> {rowBuilding} </div> ))
         if (i !== x - 1) {
-            grid.push(( <div key={`grid-road-row-${i}`} style={{display: "inline-grid", gridTemplateColumns: `repeat(${y}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowRoad} </div> ))
+            grid.push(( <div key={`grid-road-row-${i}`} style={{display: "inline-grid", gridTemplateColumns: `repeat(${y}, ${buildingYPercent}% ${roadYPercent}%)`}}> {rowRoad} </div> ))
         }
     }
 
@@ -91,18 +99,18 @@ export const Grid= ({x, y}: GridProps) => {
                 key="grid"
                 style={{
                     display: "grid",
-                    gridTemplateRows: `repeat(${x}, ${buildingYPercent}% ${roadYPercent}%)`,
-                    width: "100vw",
-                    height: "100vh",
+                    gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`,
+                    width: "100%",
+                    height: "100%",
                     backgroundColor: "white"
                 }
             }>
             {grid}
             </div>
             <button onClick={() => {
-                setHorizontalRoadState(build2DArray(x, y, 0));
-                setVerticalRoadState(build2DArray(x, y, 0));
-                setIntersectionState(build2DArray(x, y, 0));
+                setHorizontalRoadState(build2DArray(x + 1, y + 1, 0));
+                setVerticalRoadState(build2DArray(x + 1, y + 1, 0));
+                setIntersectionState(build2DArray(x + 1, y + 1, 0));
             }}> Reset </button>
         </>
     )
