@@ -34,6 +34,11 @@ export const Grid= ({x, y}: GridProps) => {
     const verticalRoad = (x_idx: number, y_idx : number)  => (<div key={`vertical-road-${x_idx}-${y_idx}}`} 
         onClick={() => {
             verticalRoadState[x_idx][y_idx] ^= 1;
+            if (verticalRoadState[x_idx][y_idx] === 1) {
+                intersectionState[x_idx][y_idx]++;
+            } else {
+                intersectionState[x_idx][y_idx]--;
+            }
             setVerticalRoadState([...verticalRoadState])
         }}
         onDragOver={() => {
@@ -44,6 +49,11 @@ export const Grid= ({x, y}: GridProps) => {
     const horizontalRoad = (x_idx: number, y_idx : number)  => (<div key={`horizontal-road-${x_idx}-${y_idx}}`} 
         onClick={() => {
             horizontalRoadState[x_idx][y_idx] ^= 1;
+            if (horizontalRoadState[x_idx][y_idx] === 1) {
+                intersectionState[x_idx][y_idx]++;
+            } else {
+                intersectionState[x_idx][y_idx]--;
+            }
             setHorizontalRoadState([...horizontalRoadState])
         }} 
         onDragOver={() => {
@@ -52,22 +62,14 @@ export const Grid= ({x, y}: GridProps) => {
         }}
         style={{backgroundColor: horizontalRoadState?.[x_idx]?.[y_idx]? "black" : "white",}}/>);
     const intersection = (x_idx: number, y_idx: number) => (<div key={`intersection-${x_idx}-${y_idx}`} 
-        onClick={() => {
-            intersectionState[x_idx][y_idx] ^= 1;
-            setIntersectionState([...intersectionState])
-        }}
-        onDragOver={() => {
-            intersectionState[x_idx][y_idx] = 1;
-            setIntersectionState([...intersectionState])
-        }}
-        style={{backgroundColor: intersectionState?.[x_idx]?.[y_idx]? "black" : "white"}}/>);
+        style={{backgroundColor: intersectionState?.[x_idx]?.[y_idx] > 0 ? "black" : "white"}}/>);
 
     let grid : React.ReactNode[]  = []
 
     for (let i = 0; i < x; i++){
         let rowBuilding: React.ReactNode[] = []
         let rowRoad: React.ReactNode[] = []
-        for (let j = 0; j < y; j ++) {
+        for (let j = 0; j < y; j++) {
             rowBuilding.push(building(i, j));
             rowRoad.push(verticalRoad(i + 1, j + 1))
             if (j !== y - 1) {
@@ -75,9 +77,9 @@ export const Grid= ({x, y}: GridProps) => {
                 rowRoad.push(intersection(i + 1, j + 1))
             }
         }
-        grid.push(( <div key={`grid-building-row-${i}`} style={{display: "inline-grid",  gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowBuilding} </div> ))
+        grid.push(( <div key={`grid-building-row-${i}`} style={{display: "inline-grid",  gridTemplateColumns: `repeat(${y}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowBuilding} </div> ))
         if (i !== x - 1) {
-            grid.push(( <div key={`grid-road-row-${i}`} style={{display: "inline-grid", gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowRoad} </div> ))
+            grid.push(( <div key={`grid-road-row-${i}`} style={{display: "inline-grid", gridTemplateColumns: `repeat(${y}, ${buildingXPercent}% ${roadXPercent}%)`}}> {rowRoad} </div> ))
         }
     }
 
@@ -89,8 +91,8 @@ export const Grid= ({x, y}: GridProps) => {
                 key="grid"
                 style={{
                     display: "grid",
-                    gridTemplateColumns: `repeat(${x}, ${buildingYPercent}% ${roadYPercent}%)`,
-                    width: "100vh",
+                    gridTemplateRows: `repeat(${x}, ${buildingYPercent}% ${roadYPercent}%)`,
+                    width: "100vw",
                     height: "100vh",
                     backgroundColor: "white"
                 }
