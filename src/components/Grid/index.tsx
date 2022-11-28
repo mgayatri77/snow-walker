@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Button } from "@mui/material"
+import { Button, Paper, Grid as MUIGrid, LinearProgress } from '@mui/material';
 
 type GridProps = {
     x: number;
     y: number;
+    numPlows: number;
 };
 
 const build2DArray = ( x: number, y:  number, defaultValue? : any) => {
@@ -19,7 +20,7 @@ const build2DArray = ( x: number, y:  number, defaultValue? : any) => {
     return matrix;
 }
 
-export const Grid= ({x, y}: GridProps) => {
+export const Grid= ({x, y, numPlows}: GridProps) => {
     const blockXPercent = Math.floor(100/x);
     const buildingXPercent = Math.floor(blockXPercent*0.95);
     const roadXPercent =blockXPercent - buildingXPercent;
@@ -27,13 +28,10 @@ export const Grid= ({x, y}: GridProps) => {
     const buildingYPercent = Math.floor(blockYPercent*0.95);
     const roadYPercent =blockYPercent - buildingYPercent;
 
-
-    console.log(`${buildingXPercent}% ${roadXPercent}%`)
-    console.log(`${buildingXPercent}% ${roadXPercent}%`)
-
     const [intersectionState, setIntersectionState] = useState(build2DArray(x + 1, y + 1, 0));
     const [verticalRoadState, setVerticalRoadState] = useState(build2DArray(x + 1, y + 1, 0));
     const [horizontalRoadState, setHorizontalRoadState] = useState(build2DArray(x+1, y+1, 0));
+    const [processedPlows, setProcessedPlows] = useState(0);
 
     const building = (x_idx: number, y_idx : number) => (<div key={`building-${x_idx}-${y_idx}`} onClick={() => {}} style={{backgroundColor: "blue",}}/>);
     const verticalRoad = (x_idx: number, y_idx : number)  => (<div key={`vertical-road-${x_idx}-${y_idx}}`} 
@@ -95,27 +93,59 @@ export const Grid= ({x, y}: GridProps) => {
 
 
     return (
-        <>
-            <div 
-                key="grid"
-                style={{
-                    display: "grid",
-                    gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`,
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "white"
-                }
-            }>
-            {grid}
-            </div>
-
-            <Button onClick={() => {
-                setHorizontalRoadState(build2DArray(x + 1, y + 1, 0));
-                setVerticalRoadState(build2DArray(x + 1, y + 1, 0));
-                setIntersectionState(build2DArray(x + 1, y + 1, 0));
-            }}
-            variant="outlined">Reset</Button>
-            <Button variant="outlined">Submit</Button>
-        </>
+         <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
+            <Paper elevation={4} >
+                        
+                <MUIGrid container spacing={2} style={{padding: "10%"}}>
+                    <MUIGrid item xs={4}>
+                        Current Plow: {processedPlows + 1}
+                    </MUIGrid>
+                    <MUIGrid item xs={8}>
+                        <LinearProgress variant="determinate" value={100*processedPlows/numPlows} />
+                    </MUIGrid>
+                    <MUIGrid item xs={12}>
+                        <div 
+                            key="grid"
+                            style={{
+                                display: "grid",
+                                gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`,
+                                width: "100%",
+                                height: "50vh",
+                                backgroundColor: "white"
+                            }}
+                        >
+                            {grid}
+                        </div>
+                    </MUIGrid>
+                    <MUIGrid item xs={6}>
+                        <Button 
+                            onClick={() => {
+                                setHorizontalRoadState(build2DArray(x + 1, y + 1, 0));
+                                setVerticalRoadState(build2DArray(x + 1, y + 1, 0));
+                                setIntersectionState(build2DArray(x + 1, y + 1, 0));
+                            }}
+                            variant="outlined"
+                            style={{width: "100%"}}
+                        >
+                            Reset
+                        </Button>
+                    </MUIGrid>
+                    <MUIGrid item xs={6}>
+                        <Button 
+                            variant="outlined" 
+                            style={{width: "100%"}}
+                            onClick={() => {
+                                setHorizontalRoadState(build2DArray(x + 1, y + 1, 0));
+                                setVerticalRoadState(build2DArray(x + 1, y + 1, 0));
+                                setIntersectionState(build2DArray(x + 1, y + 1, 0));
+                                setProcessedPlows(processedPlows + 1);
+                            }}
+                        >
+                            Submit
+                        </Button>
+                    </MUIGrid>
+                </MUIGrid>
+            </Paper>
+        </div>
     )
 }

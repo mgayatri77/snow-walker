@@ -40,7 +40,7 @@ export const MainPage = () => {
                     gridRowEnd: "span 10",
                 }} >
                     <div>
-                        <Grid x={gameConfig.gridX} y={gameConfig.gridY} />
+                        <Grid x={gameConfig.gridX} y={gameConfig.gridY} numPlows={gameConfig.numPlows}/>
                     </div>
                 </div>
             );
@@ -50,19 +50,5 @@ export const MainPage = () => {
             break;
     }
 
-    return (
-        <div  style={{
-            height: "90vh",
-            width: "90vw",
-            display: "grid", 
-            gridColumnStart: "1",
-            gridColumnEnd: "span col4-start",
-            gridRowStart: 2,
-            gridRowEnd: "span 10",
-        }} >
-            <div>
-                <Grid x={10} y={10} />
-            </div>
-        </div>
-    );
+    return <div/>
 }
