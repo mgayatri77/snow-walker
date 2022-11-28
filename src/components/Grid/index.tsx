@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button } from "@mui/material"
 
 type GridProps = {
     x: number;
@@ -107,11 +108,14 @@ export const Grid= ({x, y}: GridProps) => {
             }>
             {grid}
             </div>
-            <button onClick={() => {
+
+            <Button onClick={() => {
                 setHorizontalRoadState(build2DArray(x + 1, y + 1, 0));
                 setVerticalRoadState(build2DArray(x + 1, y + 1, 0));
                 setIntersectionState(build2DArray(x + 1, y + 1, 0));
-            }}> Reset </button>
+            }}
+            variant="outlined">Reset</Button>
+            <Button variant="outlined">Submit</Button>
         </>
     )
 }
