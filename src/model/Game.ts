@@ -1,17 +1,20 @@
-import { randomInt } from "crypto";
-
-type Node = {
+export type Node = {
     x: number;
     y: number;
 };
 
-type Road = {
+export type Road = {
     fixed: boolean;
-    cleared: ( 0 | 1);
+    cleared: boolean;
+    clearedBy?: number;
+}
+
+const randomInt = (max: number) => {
+    return Math.floor(Math.random() * max);
 }
 
 export class Game {
-    roads: Map<Node, Map<Node, Road>>;
+    roads: { [key: string]: {[key: string]: Road} };
     numPlows: number;
 
     constructor(gridX: number, gridY: number, numPlows: number, percentCleared : number = .10){
@@ -19,22 +22,26 @@ export class Game {
         this.numPlows = numPlows;
     };
 
-    buildRoads = (gridX: number, gridY: number, percentCleared: number) : Map<Node, Map<Node, Road>> => {
-        let roads : Map<Node, Map<Node, Road>> = new Map<Node, Map<Node, Road>>()
-        
-        for (let x = 0; x < gridX; x++){
-            for (let y = 0; y < gridY; y++){
-                let currRoads : Map<Node, Road> = new Map<Node, Road>();
-                if (x+1 < gridX)
-                    currRoads.set({ x: x+1, y }, {fixed: false, cleared: 0});
-                if (x - 1 > 0)
-                    currRoads.set({ x: x-1, y }, {fixed: false, cleared: 0});
-                if (y + 1 > gridY)
-                    currRoads.set({ x, y: y + 1 }, {fixed: false, cleared: 0});
-                if (y - 1 < 0)
-                    currRoads.set({ x, y: y -1 }, {fixed: false, cleared: 0});
+    private nodeToString(node: Node) : string {
+        return `x:${node.x},y:${node.y}`;
+    }
 
-                roads.set({ x, y }, currRoads);
+    buildRoads(gridX: number, gridY: number, percentCleared: number) : { [key: string]: {[key: string]: Road} }{
+        let roads : { [key: string]: {[key: string]: Road} } = {};
+        
+        for (let x = 0; x < gridX + 1; x++){
+            for (let y = 0; y < gridY + 1; y++){
+                let currRoads : {[key: string]: Road} = {};
+                if (x+1 <= gridX)
+                    currRoads[this.nodeToString({ x: x+1, y })] = {fixed: false, cleared: false};
+                if (x - 1 >= 0)
+                    currRoads[this.nodeToString({ x: x-1, y })] = {fixed: false, cleared: false};
+                if (y + 1 <= gridY)
+                    currRoads[this.nodeToString({ x, y: y + 1 })] = {fixed: false, cleared: false};
+                if (y - 1 >= 0)
+                    currRoads[this.nodeToString({ x, y: y -1 })] = {fixed: false, cleared: false};
+
+                roads[this.nodeToString({ x, y })] = currRoads;
             }
         }
 
@@ -43,28 +50,58 @@ export class Game {
 
         let i = 0;
         while (i < gridX*gridY*percentCleared){
-            let startX = randomInt(gridX);
-            let endX = randomInt(gridX);
-            let startY = randomInt(gridY);
-            let endY = randomInt(gridY);
+            const startX = randomInt(gridX);
+            const startY = randomInt(gridX);
 
-            if (roads.get({ x: startX, y: startY})?.get({ x: endX, y: endY })?.cleared === 1) {
+            const deltaX = (randomInt(2)-1);
+            const deltaY = (randomInt(2)-1);
+
+            if (
+                (deltaX === 0 && deltaY === 0) ||
+                (deltaX === 1 && deltaY === 1) ||
+                (deltaX === 1 && deltaY === -1) ||
+                (deltaX === -1 && deltaY === 1) ||
+                (deltaX === -1 && deltaY === -1) ||
+                (startX + deltaX > gridX) ||
+                (startX + deltaX < 0) ||
+                (startY + deltaY > gridX) ||
+                (startY + deltaY < 0)
+            )
+                continue;
+
+            let endX = startX + deltaX;
+            let endY = startY + deltaY;
+
+            const fromStr = this.nodeToString({x: startX, y: startY});
+            const toStr = this.nodeToString({x: endX, y: endY});
+
+            if (roads[this.nodeToString({ x: startX, y: startY})]?.[this.nodeToString({ x: endX, y: endY })]?.cleared === true) {
                 continue
             } else {
-                roads.get({ x: startX, y: startY})?.set({ x: endX, y: endY }, {fixed: true, cleared: 1});
-                roads.get({ x: endX, y: endY})?.set({ x: startX, y: startX }, {fixed: true, cleared: 1});
+                const newVal = {fixed: true, cleared: true};
+                roads = {
+                    ...roads,
+                    [fromStr]: {
+                        ...roads[fromStr],
+                        [toStr]: newVal
+                    },
+                    [toStr]: {
+                        ...roads[toStr],
+                        [fromStr]: newVal
+                    }
+                };
                 i++;
             }
         }
         return roads;
     }
 
-    setRoad = (from: Node, to: Node, value: (0 | 1) = 1) : boolean => {
-        let r1 = this.roads.get(from)?.get(to);
+    setRoad(from: Node, to: Node, value: boolean = true) : boolean {
+        let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
         
-        if (!r1?.fixed && r1?.cleared !== value){
-            this.roads.get(from)?.set(to, {fixed: false, cleared: value});
-            this.roads.get(to)?.set(from, {fixed: false, cleared: value});
+        if (!road?.fixed){
+            this.roads[this.nodeToString(from)][this.nodeToString(to)] = {fixed: false, cleared: value};
+            this.roads[this.nodeToString(to)][this.nodeToString(from)] = {fixed: false, cleared: value};
 
             //TODO check that road is valid move
 
@@ -75,7 +112,42 @@ export class Game {
         
     }
 
-    computeScore = () : number => {
+    flipRoad(from: Node, to: Node, by?: number) : boolean {
+        let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
+        
+        const fromStr = this.nodeToString(from);
+        const toStr = this.nodeToString(to);
+        
+        if (!road?.fixed){
+            const newVal = {fixed: false, cleared: !road?.cleared, clearedBy: by};
+            this.roads = {
+                ...this.roads,
+                [fromStr]: {
+                    ...this.roads[fromStr],
+                    [toStr]: newVal
+                },
+                [toStr]: {
+                    ...this.roads[toStr],
+                    [fromStr]: newVal
+                }
+            }
+            //TODO check that road is valid move
+            return true;
+        }
+
+        return false;
+        
+    }
+
+    getRoad(from: Node, to: Node) : Road | undefined {
+        return this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
+    }
+
+    getRoads(node: Node) : Road[] {
+        return Object.values(this.roads?.[this.nodeToString(node)] ?? {});
+    }
+
+    computeScore() : number {
         //TODO
 
         return 0;
