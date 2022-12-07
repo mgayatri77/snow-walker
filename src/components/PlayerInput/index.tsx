@@ -50,16 +50,19 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                                     return{
                                         background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #f2c43a 10px, #f2c43a 20px), linear-gradient( to bottom, #000000, #000000)'
                                     };
+                                } else if (game.getRoad(from, to)?.cleared) {
+                                    return {backgroundColor: game.getRoad(from, to)?.clearedBy === processedPlows ? "black": "#a5a6a8"};
                                 } else {
-                                    return {backgroundColor: game.getRoad(from, to)?.cleared ? "black": "white"};
+                                    return {backgroundColor: "white"};
                                 }
                             }}
                             intersectionStyle={(node) =>  {
                                 const roadsLength = game.getRoads(node).filter(r => r.cleared).length;
                                 const fixedRoads = game.getRoads(node).filter(r => r.fixed).length;
+                                const clearedBy = game.getRoads(node).filter(r => r.clearedBy === processedPlows).length;
 
                                 if (fixedRoads > 0 || roadsLength > 0) {
-                                    return { backgroundColor: "black" };
+                                    return { backgroundColor: clearedBy > 0 ? "black" : "#a5a6a8" };
                                 } else {
                                     return {backgroundColor: "white"}
                                 }
