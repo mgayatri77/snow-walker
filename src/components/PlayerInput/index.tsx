@@ -1,5 +1,5 @@
 import React, { useReducer, useState } from "react";
-import { Button, Paper, Grid as MUIGrid, LinearProgress } from '@mui/material';
+import { Alert, Button, Paper, Grid as MUIGrid, LinearProgress, Snackbar } from '@mui/material';
 
 import { Grid } from '../Grid'
 import { GridConfig } from "../ConfigureGame";
@@ -15,6 +15,8 @@ export type PlayerInputProps = {
 
 export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps) => {
     const [processedPlows, setProcessedPlows] = useState(0);
+    const [alert, setAlert] = useState({ text: '', hasAlert: false });
+
     const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
     return (
@@ -31,18 +33,44 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                         <LinearProgress variant="determinate" value={100*processedPlows/numPlows} />
                     </MUIGrid>
                     <MUIGrid item xs={12}>
+                        <Snackbar open={alert.hasAlert} autoHideDuration={6000} onClose={() =>{}}>
+                            <Alert variant="filled" severity="error" style={{width: "100%"}}>
+                                {alert.text}
+                            </Alert>
+                        </Snackbar>
+                    </MUIGrid>
+                    <MUIGrid item xs={12}>
                         <Grid 
                             x={grid.x}
                             y={grid.y}
-                            buildingStyle={(node) =>  ({backgroundColor: "blue"})}
-                            roadStyle={(from, to) =>  ({backgroundColor: game.getRoad(from, to)?.cleared ? "black": "white"})}
+                            buildingStyle={(node) =>  ({backgroundColor: "#5c82e0", borderRadius: "5%"})}
+                            roadStyle={(from, to) =>  {
+                                const road = game.getRoad(from, to);
+                                if (road?.fixed) {
+                                    return{
+                                        background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #f2c43a 10px, #f2c43a 20px), linear-gradient( to bottom, #000000, #000000)'
+                                    };
+                                } else {
+                                    return {backgroundColor: game.getRoad(from, to)?.cleared ? "black": "white"};
+                                }
+                            }}
                             intersectionStyle={(node) =>  {
-                                const  roadsLength = game.getRoads(node).filter(r => r.cleared).length;
-                                return {backgroundColor: roadsLength > 0 ? "black": "white"}
+                                const roadsLength = game.getRoads(node).filter(r => r.cleared).length;
+                                const fixedRoads = game.getRoads(node).filter(r => r.fixed).length;
+
+                                if (fixedRoads > 0 || roadsLength > 0) {
+                                    return { backgroundColor: "black" };
+                                } else {
+                                    return {backgroundColor: "white"}
+                                }
                             }}
                             onRoadClick={(from, to,)=> {
-                                game.flipRoad(from, to, processedPlows);
-                                forceUpdate();
+                                try {
+                                    game.addPlowPath(processedPlows, from, to);
+                                    setAlert({hasAlert: false, text: ''})
+                                } catch (error: any) {
+                                    setAlert({hasAlert: true, text: error.message})
+                                }
                             }}
                         />
                     </MUIGrid>
@@ -59,7 +87,10 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                         <Button 
                             variant="outlined" 
                             style={{width: "100%"}}
-                            onClick={() => {setProcessedPlows(processedPlows + 1);}}
+                            disabled={processedPlows === numPlows}
+                            onClick={() => {
+                                setProcessedPlows(processedPlows + 1);
+                            }}
                         >
                             Next
                         </Button>
