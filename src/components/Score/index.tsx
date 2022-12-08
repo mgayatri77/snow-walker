@@ -2,7 +2,7 @@ import React, { useReducer, useState } from "react";
 import { Alert, Button, Paper, Grid as MUIGrid, LinearProgress, Snackbar } from '@mui/material';
 
 import { Grid } from '../Grid'
-import { GameConfig, GridConfig } from "../ConfigureGame";
+import { GameConfig, GridConfig, PlayerType } from "../ConfigureGame";
 
 import { Game } from "../../model/Game"
 import { padding } from "@mui/system";
@@ -20,10 +20,10 @@ export const Score = ({config, player1Game, player2Game}: ScoreProps) => {
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={6}>
-                        Player 1 Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
+                        {config.player1.type == PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
-                        Player 2 Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
+                        {config.player2.type == PlayerType.human? config.player2.name : config.player2.type} Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 
