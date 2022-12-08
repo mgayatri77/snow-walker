@@ -24,7 +24,7 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                         {config.player1.type == PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getScore()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player2.type == PlayerType.human? config.player2.name : config.player2.type} Score: {player1Game.getScore()} {/*// player1Game.getScore()*/}
+                        {config.player2.type == PlayerType.human? config.player2.name : config.player2.type} Score: {player2Game.getScore()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 

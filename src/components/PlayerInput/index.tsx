@@ -25,7 +25,7 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={4}>
-                        Current Score: {game.getMaxDistance()}
+                        Current Score: {game.getScore()}
                     </MUIGrid>
                     <MUIGrid item xs={4}>
                         Current Player: {playerName}
