@@ -337,6 +337,31 @@ export class Game {
         return (infiniteDistance == false);
     }
 
+    getMaxDistances() : number[][] {
+        let maxDistances: number[][] = Array.from({length: this.gridX}, () =>
+            Array.from({length: this.gridY}, () => 0)
+        );
+        
+        for (let i = 0; i < this.gridX; ++i) {
+            for (let j = 0; j < this.gridY; ++j) {
+                // run BFS from Building at i, j
+                let distances = this.runBfs(i, j, Infinity);
+                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
+                // loop over adjacent buildings
+                for (let d = 0; d < dirs.length; ++d) {
+                    let x = i + dirs[d][0]; 
+                    let y = j + dirs[d][1]; 
+                    // update max distance to adjacent building if needed
+                    if (this.isValidBuilding(x, y)) {
+                        maxDistances[i][j] = Math.max(maxDistances[i][j], distances[x][y]);
+                    }
+                }
+            }
+        }
+
+        return maxDistances;
+    }
+
     getMaxDistance() : number {
         let maxDistance: number = 0; 
         for (let i = 0; i < this.gridX; ++i) {
