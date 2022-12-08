@@ -79,7 +79,7 @@ export const Grid= ({x, y, onRoadClick, buildingStyle, roadStyle, intersectionSt
             style={{
                 display: "grid",
                 gridTemplateRows: `repeat(${x}, ${buildingXPercent}% ${roadXPercent}%)`,
-                width: "40vw",
+                width: "25vw",
                 height: "60vh",
                 backgroundColor: "white",
                 marginLeft: "auto",
