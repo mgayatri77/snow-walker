@@ -197,35 +197,15 @@ export class Game {
         return undefined
     }
 
-    submitPlowPath(plowId : number) {
-        const startingNode = this.getPlowStartNode(plowId);
-        console.log(startingNode);
-        if (startingNode === undefined){
-            throw new Error('no starting node found');
-        }
-
-        const buildPath = (node: Node, tail : Node[]) : Node[] => {
-            for (const nxt of Object.keys(this.roads[this.nodeToString(node)])){
-                const road = this.roads[this.nodeToString(node)][nxt];
-                if (road.clearedBy === plowId){
-                    return buildPath(road.to, [...tail, road.to]);
-                }
-            }
-            return tail;
-        }
-
-        this.plowPaths[plowId] = buildPath(startingNode, []);
-
-        //Check if valid
-    }
-
     addPlowPath(plowId: number, from: Node, to: Node) : boolean | string {
         let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
         
         const fromStr = this.nodeToString(from);
         const toStr = this.nodeToString(to);
         
-        if (!road?.fixed){
+        if ((road.clearedBy !== undefined && road.clearedBy !== plowId) || road?.fixed){
+            throw new Error("Path has already been cleared!");
+        } else if (!road?.fixed){
             const newState = !road?.cleared;
             const newVal = {from, to, fixed: false, cleared: newState, clearedBy: newState? plowId : undefined};
             const currPath = this.plowPaths[plowId] ?? [];
@@ -270,16 +250,36 @@ export class Game {
                     [fromStr]: newVal
                 }
             }
-
-            //TODO check that road is valid move
             return true;
         }
-
         return false;
+    }
 
-       
+    resetPlowPath(plowId: number) {
+        const currPath = this.plowPaths[plowId] ?? [];
 
-        return false;
+        for (let fromIdx = 0; fromIdx <= currPath.length - 2; fromIdx++){
+            const from = currPath[fromIdx];
+            const to = currPath[fromIdx + 1];
+            const fromStr = this.nodeToString(from);
+            const toStr = this.nodeToString(to);
+
+            const newVal = {from, to, fixed: false, cleared: false, clearedBy: undefined};
+
+            this.roads = {
+                ...this.roads,
+                [fromStr]: {
+                    ...this.roads[fromStr],
+                    [toStr]: newVal
+                },
+                [toStr]: {
+                    ...this.roads[toStr],
+                    [fromStr]: newVal
+                }
+            }
+        }
+
+        this.plowPaths[plowId] = [];
     }
 
     computeScore() : number {

@@ -10,11 +10,12 @@ export type PlayerInputProps = {
     playerName?: string;
     grid: GridConfig;
     numPlows: number;
-    game: Game
+    game: Game;
+    onEnd: () => void;
 }
 
-export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps) => {
-    const [processedPlows, setProcessedPlows] = useState(0);
+export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInputProps) => {
+    const [processedPlows, setProcessedPlows] = useState(1);
     const [alert, setAlert] = useState({ text: '', hasAlert: false });
 
     const [_, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -27,7 +28,7 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                         Current Player: {playerName}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
-                        Current Plow: {processedPlows + 1}
+                        Current Plow: {processedPlows}
                     </MUIGrid>
                     <MUIGrid item xs={12}>
                         <LinearProgress variant="determinate" value={100*processedPlows/numPlows} />
@@ -61,7 +62,9 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                                 const fixedRoads = game.getRoads(node).filter(r => r.fixed).length;
                                 const clearedBy = game.getRoads(node).filter(r => r.clearedBy === processedPlows).length;
 
-                                if (fixedRoads > 0 || roadsLength > 0) {
+                                if (fixedRoads > 0 ) {
+                                    return { backgroundColor: "black" };
+                                } else if (roadsLength > 0) {
                                     return { backgroundColor: clearedBy > 0 ? "black" : "#a5a6a8" };
                                 } else {
                                     return {backgroundColor: "white"}
@@ -77,25 +80,43 @@ export const PlayerInput = ({playerName, grid, numPlows, game}: PlayerInputProps
                             }}
                         />
                     </MUIGrid>
-                    <MUIGrid item xs={6}>
+                    <MUIGrid item xs={4}>
                         <Button 
-                            onClick={() => {}}
+                            variant="outlined" 
+                            style={{width: "100%"}}
+                            disabled={processedPlows <= 1}
+                            onClick={() => {
+                                game.resetPlowPath(processedPlows);
+                                setProcessedPlows(processedPlows - 1);
+                            }}
+                        >
+                            Previous Plow
+                        </Button>
+                    </MUIGrid>
+                    <MUIGrid item xs={4}>
+                        <Button 
+                            onClick={() => {
+                                game.resetPlowPath(processedPlows);
+                                forceUpdate();
+                            }}
                             variant="outlined"
                             style={{width: "100%"}}
                         >
                             Reset
                         </Button>
                     </MUIGrid>
-                    <MUIGrid item xs={6}>
+                    <MUIGrid item xs={4}>
                         <Button 
                             variant="outlined" 
                             style={{width: "100%"}}
-                            disabled={processedPlows === numPlows}
                             onClick={() => {
-                                setProcessedPlows(processedPlows + 1);
+                                if (processedPlows < numPlows)
+                                    setProcessedPlows(processedPlows + 1);
+                                else
+                                    onEnd();
                             }}
                         >
-                            Next
+                            {processedPlows < numPlows? 'Next Plow' : 'Submit'}
                         </Button>
                     </MUIGrid>
                 </MUIGrid>

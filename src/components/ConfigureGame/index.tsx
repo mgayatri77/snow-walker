@@ -32,8 +32,8 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
     const [gridX, setGridX] = useState(0);
     const [gridY, setGridY] = useState(0);
     const [numPlows, setNumPlows] = useState(0);
-    const [player1, setPlayer1] = useState<PlayerConfig>({type: PlayerType.human});
-    const [player2, setPlayer2] = useState<PlayerConfig>({type: PlayerType.human});
+    const [player1, setPlayer1] = useState<PlayerConfig>({name: '', type: PlayerType.human});
+    const [player2, setPlayer2] = useState<PlayerConfig>({name: '', type: PlayerType.human});
 
     return (
         <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
