@@ -34,6 +34,10 @@ export class Game {
         return `x:${node.x},y:${node.y}`;
     }
 
+    private isValidBuilding(x: number, y: number) : boolean { 
+        return x >= 0 && y >= 0 && x < this.gridX && y < this.gridY; 
+    }
+
     buildRoads(gridX: number, gridY: number, percentCleared: number) : { [key: string]: {[key: string]: Road} }{
         let roads : { [key: string]: {[key: string]: Road} } = {};
         
@@ -159,6 +163,17 @@ export class Game {
 
     getRoads(node: Node) : Road[] {
         return Object.values(this.roads?.[this.nodeToString(node)] ?? {});
+    }
+
+    getPlowedRoads(node: Node) : Road[] {
+        let plowedRoads : Road[] = []; 
+        let currRoads: Road[] = this.getRoads(node); 
+        for (let i = 0; i < currRoads.length; i++) {
+            if (currRoads[i].cleared || currRoads[i].fixed) {
+                plowedRoads.push(currRoads[i]);
+            }
+        }
+        return plowedRoads;
     }
 
     getPlowStartNode(plowId: number) : Node | undefined {
@@ -300,7 +315,7 @@ export class Game {
     }
 
     getMaxDistance() : number {
-        let maxDistance: number = Infinity; 
+        let maxDistance: number = 0; 
         for (let i = 0; i < this.gridX; ++i) {
             for (let j = 0; j < this.gridY; ++j) {
                 // run BFS from Building at i, j
@@ -311,7 +326,7 @@ export class Game {
                     let x = i + dirs[d][0]; 
                     let y = i + dirs[d][1]; 
                     // update max distance to adjacent building if needed
-                    if (x >= 0 && y >= 0 && x < this.gridX && y < this.gridY) {
+                    if (this.isValidBuilding(x, y)) {
                         maxDistance = Math.max(maxDistance, distances[x][y]);
                     }
                 }
@@ -329,9 +344,11 @@ export class Game {
         let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
         let neighbors: number[][] = []; 
         for (let i = 0; i < corners.length; i++) {
-            let node = {x: corners[i][0], y: corners[i][1]}
-            if (this.getRoads(node).length > 0) {
-                neighbors.concat(this.getBuildings(node)); 
+            if (this.isValidBuilding(corners[i][0], corners[i][1]))  {
+                let node = {x: corners[i][0], y: corners[i][1]}
+                if (this.getPlowedRoads(node).length > 0) {
+                    neighbors = neighbors.concat(this.getBuildings(node)); 
+                }
             }
         }
         for (let i = 0; i < neighbors.length; i++) {
@@ -347,25 +364,28 @@ export class Game {
             Array.from({length: this.gridY}, () => false)
         );
         let distances: number[][] = Array.from({length: this.gridX}, () =>
-            Array.from({length: this.gridY}, () => Infinity)
+            Array.from({length: this.gridY}, () => 0)
         );
 
-        queue.push([x, y, 0]); 
+        queue.push([x, y]); 
         visited[x][y] = true;
         while (queue.length > 0) {
             let next: number[] = queue.shift()!; 
             let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
             let neighbors: number[][] = []; 
             for (let i = 0; i < corners.length; i++) {
-                let node = {x: corners[i][0], y: corners[i][1]}
-                if (this.getRoads(node).length > 0) {
-                    neighbors.concat(this.getBuildings(node)); 
+                if (this.isValidBuilding(corners[i][0], corners[i][1])) {
+                    let node = {x: corners[i][0], y: corners[i][1]}
+                    if (this.getPlowedRoads(node).length > 0) {
+                        neighbors = neighbors.concat(this.getBuildings(node)); 
+                    }
                 }
             }
             for (let i = 0; i < neighbors.length; i++) {
                 if (!visited[neighbors[i][0]][neighbors[i][1]]) {
                     visited[neighbors[i][0]][neighbors[i][1]] = true;
-                    queue.push([neighbors[i][0], neighbors[i][1], next[2]]); 
+                    queue.push([neighbors[i][0], neighbors[i][1]]);
+                    distances[neighbors[i][0]][neighbors[i][0]] = distances[next[0]][next[1]] + 1;  
                 }
             }
         }
