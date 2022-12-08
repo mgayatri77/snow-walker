@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Paper, Grid as MUIGrid } from '@mui/material';
+import { Button, Paper, Grid as MUIGrid, Alert } from '@mui/material';
 
 import { Grid } from '../Grid'
 import { GameConfig, PlayerType } from "../ConfigureGame";
@@ -15,15 +15,40 @@ export type ScoreProps = {
 
 export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => {
 
+    const player1Scores = player1Game.getMaxDistances();
+    const player2Scores = player2Game.getMaxDistances();
+
+    const winner = () => {
+        const score1 = player1Game.getScore();
+        const score2 = player2Game.getScore()
+        if (score1 === score2){
+            const pathsUsed1 = player1Game.getNumPathsUsed();
+            const pathsUsed2 = player2Game.getNumPathsUsed();
+            
+            if (pathsUsed1 === pathsUsed2){
+                return "Game ended in a tie :/";
+            } else if (pathsUsed1 > pathsUsed2) {
+                return `${config.player2.name} wins by tie breaker, with a score of ${score2} and ${pathsUsed2} paths!`;
+            } else {
+                return `${config.player1.name} wins by tie breaker, with a score of ${score1} and ${pathsUsed1} paths!`;
+            }
+
+        } else if (score1 > score2) {
+            return `${config.player2.name} wins the game with a score of ${score2}!`;
+        } else {
+            return `${config.player1.name} wins the game with a score of ${score1}!`;
+        }
+    }
+
     return (
          <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player1.type === PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getScore()} {/*// player1Game.getScore()*/}
+                        {config.player1.type === PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getScore()}
                     </MUIGrid>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player2.type === PlayerType.human? config.player2.name : config.player2.type} Score: {player2Game.getScore()} {/*// player1Game.getScore()*/}
+                        {config.player2.type === PlayerType.human? config.player2.name : config.player2.type} Score: {player2Game.getScore()}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 
@@ -34,7 +59,7 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                     key={`building-score-player-1-${node.x}-${node.y}`} 
                                     style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
                                 >
-                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{node.x} {node.y}</p>
+                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{player1Scores[node.x][node.y]}</p>
                                 </div>
                             )}
                             roadStyle={(from, to) =>  {
@@ -72,7 +97,7 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                     key={`building-score-player-2-${node.x}-${node.y}`} 
                                     style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
                                 >
-                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{node.x} {node.y}</p>
+                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{player2Scores[node.x][node.y]}</p>
                                 </div>
                             )}
                             roadStyle={(from, to) =>  {
@@ -100,6 +125,11 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                 }
                             }}
                         />
+                    </MUIGrid>
+                    <MUIGrid item xs={12}>
+                        <Alert variant="filled">
+                            {winner()}
+                        </Alert>
                     </MUIGrid>
                     <MUIGrid item xs={12}>
                         <Button variant="outlined" onClick={() => onEnd()} style={{width:"100%"}}>

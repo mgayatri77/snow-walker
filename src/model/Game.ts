@@ -183,8 +183,12 @@ export class Game {
         return undefined
     }
 
+    getNumPathsUsed() : number {
+        return Object.values(this.plowPaths).reduce((acc, path) => acc + path.length - 1, 0);
+    }
+
     addPlowPath(plowId: number, from: Node, to: Node) : boolean | string {
-        const currNumRoads = Object.values(this.plowPaths).reduce((acc, path) => acc + path.length - 1, 0);
+        const currNumRoads = this.getNumPathsUsed();
 
         if (currNumRoads === this.maxRoads){
             throw new Error("Maximum roads reched!");
