@@ -20,10 +20,10 @@ export const Score = ({config, player1Game, player2Game}: ScoreProps) => {
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={6}>
-                        Player 1 Score: {10} {/*// player1Game.getScore()*/}
+                        Player 1 Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
-                        Player 2 Score: {10} {/*// player1Game.getScore()*/}
+                        Player 2 Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 

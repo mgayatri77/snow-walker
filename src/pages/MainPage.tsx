@@ -55,11 +55,6 @@ export const MainPage = () => {
             if (gameConfig.player1.type !== PlayerType.human){
                 setCurrentStage(Stage.Player2)
                 // TODO: Call AI to make moves on the game
-                // Save score!
-                setScores({
-                    ...scores,
-                    player1: 100
-                })
                 break;
             }
 
@@ -82,10 +77,6 @@ export const MainPage = () => {
                                 game={games.player1}
                                 onEnd={() => {
                                     setCurrentStage(Stage.Player2);
-                                    setScores({
-                                        ...scores,
-                                        player1: 10///games.player1.getScore();
-                                    })
                                 }}
                             />
                         </div>
@@ -96,11 +87,6 @@ export const MainPage = () => {
             if (gameConfig.player2.type !== PlayerType.human){
                 setCurrentStage(Stage.Score)
                 // TODO: Call AI to make moves on the game
-                // Save score!
-                setScores({
-                    ...scores,
-                    player2: 100
-                })
                 break;
             }
 
@@ -123,10 +109,6 @@ export const MainPage = () => {
                                 game={games.player2}
                                 onEnd={() => {
                                     setCurrentStage(Stage.Score);
-                                    setScores({
-                                        ...scores,
-                                        player2: 10//games.player2.getScore();
-                                    })
                                 }}
                             />
                         </div>
