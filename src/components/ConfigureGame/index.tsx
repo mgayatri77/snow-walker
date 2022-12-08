@@ -20,6 +20,7 @@ export type GridConfig = {
 export type GameConfig = {
     grid: GridConfig;
     numPlows: number;
+    maxRoads: number;
     player1: PlayerConfig;
     player2: PlayerConfig;
 }
@@ -32,6 +33,7 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
     const [gridX, setGridX] = useState(0);
     const [gridY, setGridY] = useState(0);
     const [numPlows, setNumPlows] = useState(0);
+    const [maxRoads, setMaxRoads] = useState(0);
     const [player1, setPlayer1] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [player2, setPlayer2] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [alert, setAlert] = useState({ text: '', hasAlert: false });
@@ -86,6 +88,20 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             variant="outlined"
                             value={numPlows}
                             onChange={(event) => {setNumPlows(Number(event.target.value))}}
+                            style={{width: "100%"}}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField
+                            id="config-max-roads"
+                            label="Maximun roads that can be plowed"
+                            type="number"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            variant="outlined"
+                            value={maxRoads}
+                            onChange={(event) => {setMaxRoads(Number(event.target.value))}}
                             style={{width: "100%"}}
                         />
                     </Grid>
@@ -170,18 +186,17 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             variant="outlined"
                             onClick={() => {
                                 if (gridX < 2 || gridY < 2) {
-                                    let error_msg = "Grid Size X and Y must be at least 2";
-                                    setAlert({hasAlert: true, text: error_msg});
+                                    setAlert({hasAlert: true, text: "Grid Size X and Y must be at least 2"});
+                                } else if (numPlows < 1) {
+                                    setAlert({hasAlert: true, text: "Number of Plows must be at least 1"});
+                                } else if (maxRoads < 1) {
+                                    setAlert({hasAlert: true, text: "Maximum number of roads must be at least 1"});
+                                } else {
+                                    onSubmit(
+                                        {grid: {x: gridX, y: gridY}, numPlows, maxRoads, player1, player2}
+                                    )
                                 }
-                                else if (numPlows < 1) {
-                                    let error_msg = "Number of Plows must be at least 1";
-                                    setAlert({hasAlert: true, text: error_msg});
-                                } 
-                                else {
-                                onSubmit(
-                                    {grid: {x: gridX, y: gridY}, numPlows, player1, player2}
-                                )}}
-                            }
+                            }}
                             style={{width: "100%"}}
                         >
                             Play

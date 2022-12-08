@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import { useReducer, useState } from "react";
 import { Alert, Button, Paper, Grid as MUIGrid, LinearProgress, Snackbar } from '@mui/material';
 
 import { Grid } from '../Grid'
@@ -47,7 +47,10 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
                         <Grid 
                             x={grid.x}
                             y={grid.y}
-                            buildingStyle={(node) =>  ({backgroundColor: "#5c82e0", borderRadius: "5%"})}
+                            renderBuilding={(node) =>  (<div 
+                                key={`building-player-input-${node.x}-${node.y}`} 
+                                style={{backgroundColor: "#5c82e0", borderRadius: "5%"}}
+                            />)}
                             roadStyle={(from, to) =>  {
                                 const road = game.getRoad(from, to);
                                 if (road?.fixed) {

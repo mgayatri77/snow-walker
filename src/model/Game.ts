@@ -21,13 +21,15 @@ export class Game {
     roads: { [key: string]: {[key: string]: Road} };
     plowPaths: { [key: number]: Node[] };
     numPlows: number;
+    maxRoads: number;
     score: number; 
 
-    constructor(gridX: number, gridY: number, numPlows: number, percentCleared : number = .10){
+    constructor(gridX: number, gridY: number, numPlows: number, maxRoads: number, percentCleared : number = .10){
         this.gridX = gridX;
         this.gridY = gridY;
         this.roads = this.buildRoads(percentCleared);
         this.numPlows = numPlows;
+        this.maxRoads = maxRoads;
         this.plowPaths = {};
         this.score = Infinity;             
     };
@@ -118,50 +120,6 @@ export class Game {
         }
         return roads;
     }
-
-    setRoad(from: Node, to: Node, value: boolean = true) : boolean {
-        let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
-        
-        if (!road?.fixed){
-            this.roads[this.nodeToString(from)][this.nodeToString(to)] = {...road, fixed: false, cleared: value};
-            this.roads[this.nodeToString(to)][this.nodeToString(from)] = {...road, fixed: false, cleared: value};
-
-            //TODO check that road is valid move
-
-            return true;
-        }
-
-        return false;
-        
-    }
-
-    flipRoad(from: Node, to: Node, by?: number) : boolean {
-        let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
-        
-        const fromStr = this.nodeToString(from);
-        const toStr = this.nodeToString(to);
-        
-        if (!road?.fixed){
-            const newVal = {from, to, fixed: false, cleared: !road?.cleared, clearedBy: !road?.cleared? by : undefined};
-            this.roads = {
-                ...this.roads,
-                [fromStr]: {
-                    ...this.roads[fromStr],
-                    [toStr]: newVal
-                },
-                [toStr]: {
-                    ...this.roads[toStr],
-                    [fromStr]: newVal
-                }
-            }
-
-            //TODO check that road is valid move
-            return true;
-        }
-
-        return false;
-        
-    }
     
     getCorners(x: number, y: number) : number[][] {
         return [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
@@ -226,12 +184,18 @@ export class Game {
     }
 
     addPlowPath(plowId: number, from: Node, to: Node) : boolean | string {
+        const currNumRoads = Object.values(this.plowPaths).reduce((acc, path) => acc + path.length - 1, 0);
+
+        if (currNumRoads === this.maxRoads){
+            throw new Error("Maximum roads reched!");
+        } 
+
         let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
         
         const fromStr = this.nodeToString(from);
         const toStr = this.nodeToString(to);
         
-        if ((road.clearedBy !== undefined && road.clearedBy !== plowId) || road?.fixed){
+        if ((road?.clearedBy !== undefined && road.clearedBy !== plowId) || road?.fixed){
             throw new Error("Path has already been cleared!");
         } else if (!road?.fixed){
             const newState = !road?.cleared;
@@ -245,6 +209,7 @@ export class Game {
                 } else if (to.x === this.gridX || to.y === this.gridY) {
                     this.plowPaths[plowId] = [to, from];
                 } else {
+                    console.log(from, to, this.gridX, this.gridY)
                     throw new Error("Path must start from the edge of the grid!");
                 }
             } else if (newState) {
@@ -334,7 +299,7 @@ export class Game {
 
         // check if every building was visited (distance set to < Infinity)
         let infiniteDistance = distances.some(row => row.includes(Infinity)); 
-        return (infiniteDistance == false);
+        return (infiniteDistance === false);
     }
 
     getMaxDistances() : number[][] {
@@ -416,7 +381,7 @@ export class Game {
                         if (this.isValidBuilding(bx, by) && !visited[bx][by]) {
                             visited[bx][by] = true;
                             queue.push([bx, by]);
-                            if (next[0] == i && next[1] == j) {
+                            if (next[0] === i && next[1] === j) {
                                 distances[bx][by] = 0; 
                             } else {
                                 distances[bx][by] = distances[next[0]][next[1]] + 1; 

@@ -20,14 +20,11 @@ export const MainPage = () => {
             x: 0,
             y: 0,
         },
+        maxRoads: 0,
         numPlows: 0,
         player1: {},
         player2: {}
     });
-    const [scores, setScores] = useState({
-        player1: 0,
-        player2: 0
-    })
 
     const [games, setGames] = useState<{ player1 : Game | undefined, player2: Game | undefined }>({
         player1: undefined,
@@ -40,8 +37,8 @@ export const MainPage = () => {
                 <ConfigureGame onSubmit={(config: GameConfig) => {
                     setCurrentStage(Stage.Player1)
                     setGameConfig(config)
-                    const player1Game = new Game(config.grid.x, config.grid.y, config.numPlows)
-                    const player2Game = new Game(config.grid.x, config.grid.y, config.numPlows)
+                    const player1Game = new Game(config.grid.x, config.grid.y, config.numPlows, config.maxRoads);
+                    const player2Game = new Game(config.grid.x, config.grid.y, config.numPlows, config.maxRoads);
             
                     player2Game.roads = {...player1Game.roads};
 
