@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TextField, Button, Paper, Grid, MenuItem } from '@mui/material';
+import { Alert, Snackbar, TextField, Button, Paper, Grid, MenuItem } from '@mui/material';
 
 export enum PlayerType {
     human,
@@ -34,10 +34,18 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
     const [numPlows, setNumPlows] = useState(0);
     const [player1, setPlayer1] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [player2, setPlayer2] = useState<PlayerConfig>({name: '', type: PlayerType.human});
+    const [alert, setAlert] = useState({ text: '', hasAlert: false });
 
     return (
         <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
+                <Grid item xs={12}>
+                    <Snackbar open={alert.hasAlert} autoHideDuration={6000} onClose={() =>{}}>
+                        <Alert variant="filled" severity="error" style={{width: "100%"}}>
+                            {alert.text}
+                        </Alert>
+                    </Snackbar>
+                </Grid>
                 <Grid container spacing={2} style={{padding: "10%"}}>
                     <Grid item xs={6}>
                         <TextField
@@ -160,15 +168,31 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                     <Grid item xs={12}>
                         <Button
                             variant="outlined"
-                            onClick={() => {onSubmit(
-                                {grid: {x: gridX, y: gridY}, numPlows, player1, player2}
-                            )}}
+                            onClick={() => {
+                                if (gridX < 2 || gridY < 2) {
+                                    let error_msg = "Grid Size X and Y must be at least 2";
+                                    setAlert({hasAlert: true, text: error_msg});
+                                }
+                                else if (numPlows < 1) {
+                                    let error_msg = "Number of Plows must be at least 1";
+                                    setAlert({hasAlert: true, text: error_msg});
+                                } 
+                                else {
+                                onSubmit(
+                                    {grid: {x: gridX, y: gridY}, numPlows, player1, player2}
+                                )}}
+                            }
                             style={{width: "100%"}}
                         >
                             Play
                         </Button>
                     </Grid>
-                </Grid>    
+                    <Snackbar open={alert.hasAlert} autoHideDuration={6000} onClose={() =>{}}>
+                            <Alert variant="filled" severity="error" style={{width: "100%"}}>
+                                {alert.text}
+                            </Alert>
+                    </Snackbar>
+                </Grid>
             </Paper>
         </div>
     )

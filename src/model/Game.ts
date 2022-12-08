@@ -21,34 +21,40 @@ export class Game {
     roads: { [key: string]: {[key: string]: Road} };
     plowPaths: { [key: number]: Node[] };
     numPlows: number;
+    score: number; 
 
     constructor(gridX: number, gridY: number, numPlows: number, percentCleared : number = .10){
         this.gridX = gridX;
         this.gridY = gridY;
-        this.roads = this.buildRoads(gridX, gridY, percentCleared);
+        this.roads = this.buildRoads(percentCleared);
         this.numPlows = numPlows;
         this.plowPaths = {};
+        this.score = Infinity;             
     };
 
     private nodeToString(node: Node) : string {
         return `x:${node.x},y:${node.y}`;
     }
 
+    private isValidNode(node: Node) : boolean { 
+        return node.x >= 0 && node.y >= 0 && node.x <= this.gridX && node.y <= this.gridY; 
+    }
+
     private isValidBuilding(x: number, y: number) : boolean { 
         return x >= 0 && y >= 0 && x < this.gridX && y < this.gridY; 
     }
 
-    buildRoads(gridX: number, gridY: number, percentCleared: number) : { [key: string]: {[key: string]: Road} }{
+    buildRoads(percentCleared: number) : { [key: string]: {[key: string]: Road} }{
         let roads : { [key: string]: {[key: string]: Road} } = {};
         
         for (let x = 0; x < this.gridX + 1; x++){
             for (let y = 0; y < this.gridY + 1; y++){
                 let currRoads : {[key: string]: Road} = {};
-                if (x+1 <= gridX)
+                if (x+1 <= this.gridX)
                     currRoads[this.nodeToString({ x: x+1, y })] = {from: {x, y}, to: { x: x+1, y }, fixed: false, cleared: false};
                 if (x - 1 >= 0)
                     currRoads[this.nodeToString({ x: x-1, y })] = {from: {x, y}, to: { x: x-1, y  },fixed: false, cleared: false};
-                if (y + 1 <= gridY)
+                if (y + 1 <= this.gridY)
                     currRoads[this.nodeToString({ x, y: y + 1 })] = {from: {x, y}, to: { x, y: y + 1 },fixed: false, cleared: false};
                 if (y - 1 >= 0)
                     currRoads[this.nodeToString({ x, y: y -1 })] = {from: {x, y}, to: { x, y: y -1 },fixed: false, cleared: false};
@@ -63,7 +69,7 @@ export class Game {
         let i = 0;
         while (i < this.gridX*this.gridY*percentCleared){
             const startX = randomInt(this.gridX);
-            const startY = randomInt(this.gridX);
+            const startY = randomInt(this.gridY);
 
             const deltaX = (randomInt(2)-1);
             const deltaY = (randomInt(2)-1);
@@ -76,7 +82,7 @@ export class Game {
                 (deltaX === -1 && deltaY === -1) ||
                 (startX + deltaX > this.gridX) ||
                 (startX + deltaX < 0) ||
-                (startY + deltaY > this.gridX) ||
+                (startY + deltaY > this.gridY) ||
                 (startY + deltaY < 0)
             )
                 continue;
@@ -156,6 +162,14 @@ export class Game {
         return false;
         
     }
+    
+    getCorners(x: number, y: number) : number[][] {
+        return [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
+    }
+
+    getBuildingsFromCorner(x: number, y: number) : number[][] {
+        return [[x,y],[x-1,y],[x,y-1],[x-1,y-1]]; 
+    }
 
     getRoad(from: Node, to: Node) : Road | undefined {
         return this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
@@ -165,15 +179,14 @@ export class Game {
         return Object.values(this.roads?.[this.nodeToString(node)] ?? {});
     }
 
-    getPlowedRoads(node: Node) : Road[] {
-        let plowedRoads : Road[] = []; 
+    hasPlowedRoad(node: Node) : boolean {
         let currRoads: Road[] = this.getRoads(node); 
         for (let i = 0; i < currRoads.length; i++) {
             if (currRoads[i].cleared || currRoads[i].fixed) {
-                plowedRoads.push(currRoads[i]);
+                return true; 
             }
         }
-        return plowedRoads;
+        return false;
     }
 
     getPlowStartNode(plowId: number) : Node | undefined {
@@ -265,32 +278,10 @@ export class Game {
                     [fromStr]: newVal
                 }
             }
+            this.computeScore();
             return true;
         }
         return false;
-    }
-
-    // Score computed with as max distance 
-    // travelled to get to adjacent building 
-    computeScore() : number {
-        if (!this.allBuildingsConnected()) {
-            // all buildings not connected, so return 0
-            return Infinity;             
-        }
-        return this.getMaxDistance();
-    }
-
-    allBuildingsConnected() : boolean {
-        // initialize 2d boolean array for buildings
-        let visited: boolean[][] = Array.from({length: this.gridX}, () =>
-            Array.from({length: this.gridY}, () => false)
-        );
-        // run DFS from top left building
-        this.runDfs(0, 0, visited);   
-        // check if every building was visited  
-        return visited.every(function(arr) {
-            return arr.every(Boolean);
-        });
     }
 
     resetPlowPath(plowId: number) {
@@ -320,17 +311,43 @@ export class Game {
         this.plowPaths[plowId] = [];
     }
 
+    // returns current score
+    getScore() : number {
+        return this.score; 
+    }
+
+    // Score computed with as max distance 
+    // travelled to get to adjacent building 
+    computeScore() {
+        if (!this.areBuildingsConnected()) {
+            // all buildings not connected, so return 0
+            this.score = Infinity;
+        }
+        else {
+            this.score = this.getMaxDistance();
+        }
+    }
+
+    areBuildingsConnected() : boolean {
+        // run BFS from top left building
+        let distances: number[][] = this.runBfs(0, 0, Infinity);   
+
+        // check if every building was visited (distance set to < Infinity)
+        let infiniteDistance = distances.some(row => row.includes(Infinity)); 
+        return (infiniteDistance == false);
+    }
+
     getMaxDistance() : number {
         let maxDistance: number = 0; 
         for (let i = 0; i < this.gridX; ++i) {
             for (let j = 0; j < this.gridY; ++j) {
                 // run BFS from Building at i, j
-                let distances = this.runBfs(i, j);
+                let distances = this.runBfs(i, j, 0);
                 let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
                 // loop over adjacent buildings
                 for (let d = 0; d < dirs.length; ++d) {
                     let x = i + dirs[d][0]; 
-                    let y = i + dirs[d][1]; 
+                    let y = j + dirs[d][1]; 
                     // update max distance to adjacent building if needed
                     if (this.isValidBuilding(x, y)) {
                         maxDistance = Math.max(maxDistance, distances[x][y]);
@@ -341,80 +358,49 @@ export class Game {
         return maxDistance;  
     }
 
-    runDfs(x: number, y: number, visited: boolean[][]) {
-        if (visited[x][y]) {
-            return; 
-        }
-        visited[x][y] = true;
-
-        let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
-        let neighbors: number[][] = []; 
-        for (let i = 0; i < corners.length; i++) {
-            if (this.isValidBuilding(corners[i][0], corners[i][1]))  {
-                let node = {x: corners[i][0], y: corners[i][1]}
-                if (this.getPlowedRoads(node).length > 0) {
-                    neighbors = neighbors.concat(this.getBuildings(node)); 
-                }
-            }
-        }
-        for (let i = 0; i < neighbors.length; i++) {
-            if (!visited[neighbors[i][0]][neighbors[i][1]]) {
-                this.runDfs(neighbors[i][0], neighbors[i][1], visited);
-            }
-        }
-    }
-
-    runBfs(x: number, y: number) : number[][] {
+    runBfs(i: number, j: number, init_dist: number) : number[][] {
+        // data structures to run BFS
         let queue: number[][] = []; 
         let visited: boolean[][] = Array.from({length: this.gridX}, () =>
             Array.from({length: this.gridY}, () => false)
         );
         let distances: number[][] = Array.from({length: this.gridX}, () =>
-            Array.from({length: this.gridY}, () => 0)
+            Array.from({length: this.gridY}, () => init_dist)
         );
 
-        queue.push([x, y]); 
-        visited[x][y] = true;
+        // push source to queue
+        queue.push([i, j]); 
+        visited[i][j] = true;
+        distances[i][j] = 0; 
+
+        // run while nodes present in queue
         while (queue.length > 0) {
+            // fetch next buildings and compute corners
             let next: number[] = queue.shift()!; 
-            let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
-            let neighbors: number[][] = []; 
-            for (let i = 0; i < corners.length; i++) {
-                if (this.isValidBuilding(corners[i][0], corners[i][1])) {
-                    let node = {x: corners[i][0], y: corners[i][1]}
-                    if (this.getPlowedRoads(node).length > 0) {
-                        neighbors = neighbors.concat(this.getBuildings(node)); 
+            let corners = this.getCorners(next[0], next[1]);
+            
+            // get connected buildings
+            for (let c = 0; c < corners.length; c++) {
+                let node = {x: corners[c][0], y: corners[c][1]}
+                if (this.isValidNode(node) && this.hasPlowedRoad(node)) {
+                    let buildings: number[][] = this.getBuildingsFromCorner(corners[c][0], corners[c][1]);
+                    // add connected buildings to queue
+                    for (let b = 0; b < buildings.length; b++) {
+                        let bx = buildings[b][0]; 
+                        let by = buildings[b][1];
+                        if (this.isValidBuilding(bx, by) && !visited[bx][by]) {
+                            visited[bx][by] = true;
+                            queue.push([bx, by]);
+                            if (next[0] == i && next[1] == j) {
+                                distances[bx][by] = 0; 
+                            } else {
+                                distances[bx][by] = distances[next[0]][next[1]] + 1; 
+                            } 
+                        }
                     }
-                }
-            }
-            for (let i = 0; i < neighbors.length; i++) {
-                if (!visited[neighbors[i][0]][neighbors[i][1]]) {
-                    visited[neighbors[i][0]][neighbors[i][1]] = true;
-                    queue.push([neighbors[i][0], neighbors[i][1]]);
-                    distances[neighbors[i][0]][neighbors[i][0]] = distances[next[0]][next[1]] + 1;  
                 }
             }
         }
         return distances; 
-    }
-
-    getBuildings(node: Node) : number[][] {
-        let buildings: number[][] = [];
-        buildings[0] = [node.x, node.y]; 
-
-        let count: number = 1; 
-        if (node.x > 0) {
-            buildings[count] = [node.x-1, node.y];
-            count++; 
-        }
-        if (node.y > 0) {
-            buildings[count] = [node.x, node.y-1];
-            count++; 
-        }
-        if (node.x > 0 && node.y > 0) {
-            buildings[count] = [node.x-1, node.y-1];
-            count++; 
-        }
-        return buildings; 
     }
 }
