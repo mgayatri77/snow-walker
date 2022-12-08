@@ -71,6 +71,7 @@ export const MainPage = () => {
                     }} >
                         <div>
                             <PlayerInput 
+                                key="player1-input"
                                 playerName={gameConfig.player1.name}
                                 grid={gameConfig.grid}
                                 numPlows={gameConfig.numPlows}
@@ -102,7 +103,8 @@ export const MainPage = () => {
                         gridRowEnd: "span 10",
                     }} >
                         <div>
-                            <PlayerInput 
+                            <PlayerInput
+                                key="player2-input"
                                 playerName={gameConfig.player2.name}
                                 grid={gameConfig.grid}
                                 numPlows={gameConfig.numPlows}
