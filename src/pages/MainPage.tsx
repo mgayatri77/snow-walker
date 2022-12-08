@@ -134,6 +134,9 @@ export const MainPage = () => {
                                 config={gameConfig}
                                 player1Game={games.player1}
                                 player2Game={games.player2}
+                                onEnd={() => {
+                                    setCurrentStage(Stage.Config);
+                                }}
                             />
                          </div>
                     </div>

@@ -11,18 +11,19 @@ export type ScoreProps = {
     config: GameConfig;
     player1Game: Game;
     player2Game: Game;
+    onEnd: () => void;
 }
 
-export const Score = ({config, player1Game, player2Game}: ScoreProps) => {
+export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => {
 
     return (
          <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
-                    <MUIGrid item xs={6}>
+                    <MUIGrid item xs={6} style={{textAlign: 'center'}}>
                         {config.player1.type == PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
-                    <MUIGrid item xs={6}>
+                    <MUIGrid item xs={6} style={{textAlign: 'center'}}>
                         {config.player2.type == PlayerType.human? config.player2.name : config.player2.type} Score: {player1Game.getMaxDistance()} {/*// player1Game.getScore()*/}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
@@ -86,6 +87,11 @@ export const Score = ({config, player1Game, player2Game}: ScoreProps) => {
                                 }
                             }}
                         />
+                    </MUIGrid>
+                    <MUIGrid item xs={12}>
+                        <Button variant="outlined" onClick={() => onEnd()} style={{width:"100%"}}>
+                            Restart
+                        </Button>
                     </MUIGrid>
                 </MUIGrid>
             </Paper>
