@@ -37,8 +37,8 @@ export class Game {
     buildRoads(gridX: number, gridY: number, percentCleared: number) : { [key: string]: {[key: string]: Road} }{
         let roads : { [key: string]: {[key: string]: Road} } = {};
         
-        for (let x = 0; x < gridX + 1; x++){
-            for (let y = 0; y < gridY + 1; y++){
+        for (let x = 0; x < this.gridX + 1; x++){
+            for (let y = 0; y < this.gridY + 1; y++){
                 let currRoads : {[key: string]: Road} = {};
                 if (x+1 <= gridX)
                     currRoads[this.nodeToString({ x: x+1, y })] = {from: {x, y}, to: { x: x+1, y }, fixed: false, cleared: false};
@@ -57,9 +57,9 @@ export class Game {
         percentCleared = percentCleared < 0.0? 0.0 : percentCleared;
 
         let i = 0;
-        while (i < gridX*gridY*percentCleared){
-            const startX = randomInt(gridX);
-            const startY = randomInt(gridX);
+        while (i < this.gridX*this.gridY*percentCleared){
+            const startX = randomInt(this.gridX);
+            const startY = randomInt(this.gridX);
 
             const deltaX = (randomInt(2)-1);
             const deltaY = (randomInt(2)-1);
@@ -70,9 +70,9 @@ export class Game {
                 (deltaX === 1 && deltaY === -1) ||
                 (deltaX === -1 && deltaY === 1) ||
                 (deltaX === -1 && deltaY === -1) ||
-                (startX + deltaX > gridX) ||
+                (startX + deltaX > this.gridX) ||
                 (startX + deltaX < 0) ||
-                (startY + deltaY > gridX) ||
+                (startY + deltaY > this.gridX) ||
                 (startY + deltaY < 0)
             )
                 continue;
@@ -213,10 +213,8 @@ export class Game {
             }
             return tail;
         }
-
+        
         this.plowPaths[plowId] = buildPath(startingNode, []);
-
-        //Check if valid
     }
 
     addPlowPath(plowId: number, from: Node, to: Node) : boolean | string {
@@ -276,17 +274,121 @@ export class Game {
         }
 
         return false;
-
-       
-
-        return false;
     }
 
+    // Score computed with as max distance 
+    // travelled to get to adjacent building 
     computeScore() : number {
-        //TODO
-
-        return 0;
+        if (!this.allBuildingsConnected()) {
+            // all buildings not connected, so return 0
+            return Infinity;             
+        }
+        return this.getMaxDistance();
     }
 
+    allBuildingsConnected() : boolean {
+        // initialize 2d boolean array for buildings
+        let visited: boolean[][] = Array.from({length: this.gridX}, () =>
+            Array.from({length: this.gridY}, () => false)
+        );
+        // run DFS from top left building
+        this.runDfs(0, 0, visited);   
+        // check if every building was visited  
+        return visited.every(function(arr) {
+            return arr.every(Boolean);
+        });
+    }
 
+    getMaxDistance() : number {
+        let maxDistance: number = Infinity; 
+        for (let i = 0; i < this.gridX; ++i) {
+            for (let j = 0; j < this.gridY; ++j) {
+                // run BFS from Building at i, j
+                let distances = this.runBfs(i, j);
+                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
+                // loop over adjacent buildings
+                for (let d = 0; d < dirs.length; ++d) {
+                    let x = i + dirs[d][0]; 
+                    let y = i + dirs[d][1]; 
+                    // update max distance to adjacent building if needed
+                    if (x >= 0 && y >= 0 && x < this.gridX && y < this.gridY) {
+                        maxDistance = Math.max(maxDistance, distances[x][y]);
+                    }
+                }
+            }
+        }
+        return maxDistance;  
+    }
+
+    runDfs(x: number, y: number, visited: boolean[][]) {
+        if (visited[x][y]) {
+            return; 
+        }
+        visited[x][y] = true;
+
+        let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
+        let neighbors: number[][] = []; 
+        for (let i = 0; i < corners.length; i++) {
+            let node = {x: corners[i][0], y: corners[i][1]}
+            if (this.getRoads(node).length > 0) {
+                neighbors.concat(this.getBuildings(node)); 
+            }
+        }
+        for (let i = 0; i < neighbors.length; i++) {
+            if (!visited[neighbors[i][0]][neighbors[i][1]]) {
+                this.runDfs(neighbors[i][0], neighbors[i][1], visited);
+            }
+        }
+    }
+
+    runBfs(x: number, y: number) : number[][] {
+        let queue: number[][] = []; 
+        let visited: boolean[][] = Array.from({length: this.gridX}, () =>
+            Array.from({length: this.gridY}, () => false)
+        );
+        let distances: number[][] = Array.from({length: this.gridX}, () =>
+            Array.from({length: this.gridY}, () => Infinity)
+        );
+
+        queue.push([x, y, 0]); 
+        visited[x][y] = true;
+        while (queue.length > 0) {
+            let next: number[] = queue.shift()!; 
+            let corners = [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
+            let neighbors: number[][] = []; 
+            for (let i = 0; i < corners.length; i++) {
+                let node = {x: corners[i][0], y: corners[i][1]}
+                if (this.getRoads(node).length > 0) {
+                    neighbors.concat(this.getBuildings(node)); 
+                }
+            }
+            for (let i = 0; i < neighbors.length; i++) {
+                if (!visited[neighbors[i][0]][neighbors[i][1]]) {
+                    visited[neighbors[i][0]][neighbors[i][1]] = true;
+                    queue.push([neighbors[i][0], neighbors[i][1], next[2]]); 
+                }
+            }
+        }
+        return distances; 
+    }
+
+    getBuildings(node: Node) : number[][] {
+        let buildings: number[][] = [];
+        buildings[0] = [node.x, node.y]; 
+
+        let count: number = 1; 
+        if (node.x > 0) {
+            buildings[count] = [node.x-1, node.y];
+            count++; 
+        }
+        if (node.y > 0) {
+            buildings[count] = [node.x, node.y-1];
+            count++; 
+        }
+        if (node.x > 0 && node.y > 0) {
+            buildings[count] = [node.x-1, node.y-1];
+            count++; 
+        }
+        return buildings; 
+    }
 }
