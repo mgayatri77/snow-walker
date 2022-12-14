@@ -49,7 +49,7 @@ export const MainPage = () => {
                 }}/>
             );
         case Stage.Player1:               
-            if (gameConfig.player1.type !== PlayerType.human){
+            if (gameConfig.player1.type !== PlayerType.human) {
                 setCurrentStage(Stage.Player2)
                 // TODO: Call AI to make moves on the game
                 break;

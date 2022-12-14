@@ -3,8 +3,7 @@ import { Alert, Snackbar, TextField, Button, Paper, Grid, MenuItem } from '@mui/
 
 export enum PlayerType {
     human,
-    spiralAI,
-    otherAI
+    RandomAI,
 }
 
 export type PlayerConfig = {
@@ -117,7 +116,7 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             value={player1.type}
                             onChange={(event) => {
                                 if (event.target.value !== 'human')
-                                    setPlayer1({name: '', type: event.target.value});
+                                    setPlayer1({name: 'AI', type: event.target.value});
                                 else
                                     setPlayer1({...player1, type: event.target.value})}}
                             style={{width: "100%"}}
@@ -155,7 +154,7 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             value={player2.type}
                             onChange={(event) => {
                                 if (event.target.value !== 'human')
-                                    setPlayer2({name: '', type: event.target.value});
+                                    setPlayer2({name: 'AI', type: event.target.value});
                                 else
                                     setPlayer2({...player2, type: event.target.value})}}
                             style={{width: "100%"}}

@@ -247,10 +247,39 @@ export class Game {
                     [fromStr]: newVal
                 }
             }
-            this.computeScore();
             return true;
         }
         return false;
+    }
+
+    plowRoad(plowId: number, from: Node, to: Node) {
+        const fromStr = this.nodeToString(from);
+        const toStr = this.nodeToString(to);
+        let road = this.roads[fromStr][toStr];
+
+        const newState = !road?.cleared;
+        const newVal = {from, to, fixed: false, 
+            cleared: newState, clearedBy: newState? 
+            plowId : undefined};
+        
+        const currPath = this.plowPaths[plowId] ?? [];
+        if (currPath.length > 0) {
+            this.plowPaths[plowId] = [...currPath, from];
+        } else {
+
+        }
+
+        this.roads = {
+            ...this.roads,
+            [fromStr]: {
+                ...this.roads[fromStr],
+                [toStr]: newVal
+            },
+            [toStr]: {
+                ...this.roads[toStr],
+                [fromStr]: newVal
+            }
+        }
     }
 
     resetPlowPath(plowId: number) {
@@ -396,5 +425,123 @@ export class Game {
             }
         }
         return distances; 
+    }
+    
+    makeRandomAIMoves() {
+        if (this.maxRoads != 0) {
+            let numRoadsLeft : number = this.maxRoads; 
+            // generate paths for each plow randomly
+            for (let i = 0; i < this.numPlows; i++) {
+                let pathLength: number = Math.round(numRoadsLeft / (this.numPlows - i)); 
+                if (i == this.numPlows - 1) {
+                    pathLength = numRoadsLeft; 
+                }
+                numRoadsLeft -= this.makeRandomPath(i, pathLength); 
+            }
+            this.maxRoads = 0; 
+        }
+    }
+
+    // generate random path for current plow 
+    makeRandomPath(plowId: number, maxPathLength: number) : number {
+        let firstRoad: Node[] = this.chooseStartingRoad();
+        this.plowRoad(plowId, firstRoad[0], firstRoad[1]);
+
+        let pathLength : number = 1; 
+        let pathAdded: boolean = true;
+        let inGrid: boolean = true;
+        let pDir : number[] = [firstRoad[0].x-firstRoad[1].x, firstRoad[0].y-firstRoad[1].y];
+        let from : Node = firstRoad[1]; 
+
+        while (pathLength < maxPathLength
+            && pathAdded
+            && inGrid) {
+            let dirs : number[][] = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+            .map(value => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+            .filter(el => !(el[0] === -1 * pDir[0] && el[1] === -1 * pDir[1]));
+            
+            pathAdded = false; 
+            for (let i = 0; i < dirs.length; ++i) {
+                let to : Node = {x: from.x + dirs[i][0], y: from.y + dirs[i][1]}; 
+                if (this.roads[this.nodeToString(from)][this.nodeToString(to)].cleared || 
+                    this.roads[this.nodeToString(from)][this.nodeToString(to)].fixed) {
+                    continue;
+                }
+                
+                let inBounds: boolean = to.x > 0 && to.x < this.gridX && 
+                    to.y > 0 && to.y < this.gridY;                
+                if (inBounds || (this.isValidNode(to) && pathLength > maxPathLength / 2)) {
+                    this.plowRoad(plowId, from, to);
+                    pathAdded = true; 
+                    pathLength++; 
+                    from = to; 
+                    pDir = dirs[i];
+                }
+            }
+            inGrid = from.x != 0 && from.y != 0 && 
+                from.x != this.gridX && from.y != this.gridY;
+        }
+        return pathLength; 
+    }   
+
+    // loop over edges to choose starting point
+    chooseStartingRoad() : Node[] {
+        let distances: number[][] = this.getMaxDistances(); 
+        let startNodes: Node[][] = [];
+        let zeroNodes: Node[][] = []; 
+        for (let i = 1; i < this.gridX; ++i) {
+            let top: Node = {x : i, y : 0};
+            let below : Node = {x: i, y: 1}; 
+            if (!this.roads[this.nodeToString(top)][this.nodeToString(below)].cleared && 
+                !this.roads[this.nodeToString(top)][this.nodeToString(below)].fixed) {
+                if (distances[i][0] > 0 && distances[i-1][0] > 0) {
+                    startNodes.push([top, below]);  
+                }
+                else {
+                    zeroNodes.push([top, below])
+                }
+            }
+            let bottom: Node = {x : i, y: this.gridY}; 
+            let above: Node = {x: i, y: this.gridY-1}; 
+            if (!this.roads[this.nodeToString(bottom)][this.nodeToString(above)].cleared && 
+                !this.roads[this.nodeToString(bottom)][this.nodeToString(above)].fixed) {
+                if (distances[i][this.gridY-1] > 0 && distances[i-1][this.gridY-1] > 0) {
+                    startNodes.push([bottom, above]); 
+                }
+                else {
+                    zeroNodes.push([bottom, above]); 
+                }
+            }
+        }
+
+        for (let i = 1; i < this.gridY; ++i) {
+            let left: Node = {x : 0, y : i};
+            let next : Node = {x: 1, y: i}; 
+            if (!this.roads[this.nodeToString(left)][this.nodeToString(next)].cleared && 
+                !this.roads[this.nodeToString(left)][this.nodeToString(next)].fixed) {
+                if (distances[0][i] > 0 && distances[0][i-1] > 0) {
+                    startNodes.push([left, next]); 
+                }
+                else {
+                    zeroNodes.push([left, next]); 
+                }            
+            }
+            let right: Node = {x : this.gridX, y: i}; 
+            let previous: Node = {x: this.gridX-1, y: i}; 
+            if (!this.roads[this.nodeToString(right)][this.nodeToString(previous)].cleared && 
+                !this.roads[this.nodeToString(right)][this.nodeToString(previous)].fixed) {
+                if (distances[this.gridX-1][i] > 0 && distances[this.gridX-1][i-1] > 0) {
+                    startNodes.push([right, previous]); 
+                }
+                else {
+                    zeroNodes.push([right, previous]); 
+                }
+            }
+        }
+        return startNodes.length >= 1 ? 
+            startNodes[randomInt(startNodes.length)] : 
+            zeroNodes[randomInt(zeroNodes.length)]; 
     }
 }
