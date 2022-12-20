@@ -17,11 +17,11 @@ export const MainPage = () => {
     const [currentStage, setCurrentStage] = useState(Stage.Config);
     const [gameConfig, setGameConfig] = useState<GameConfig>({
         grid: {
-            x: 0,
-            y: 0,
+            x: 8,
+            y: 8,
         },
-        maxRoads: 0,
-        numPlows: 0,
+        maxRoads: 30,
+        numPlows: 4,
         player1: {},
         player2: {}
     });
