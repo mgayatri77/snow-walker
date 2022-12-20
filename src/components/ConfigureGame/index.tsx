@@ -29,10 +29,10 @@ type ConfigureGameProps = {
 };
 
 export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
-    const [gridX, setGridX] = useState(0);
-    const [gridY, setGridY] = useState(0);
-    const [numPlows, setNumPlows] = useState(0);
-    const [maxRoads, setMaxRoads] = useState(0);
+    const [gridX, setGridX] = useState(8);
+    const [gridY, setGridY] = useState(8);
+    const [numPlows, setNumPlows] = useState(4);
+    const [maxRoads, setMaxRoads] = useState(24);
     const [player1, setPlayer1] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [player2, setPlayer2] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [alert, setAlert] = useState({ text: '', hasAlert: false });
