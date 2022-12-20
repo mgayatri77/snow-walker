@@ -14,11 +14,11 @@ export type ScoreProps = {
 }
 
 export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => {
-    if (config.player1.type != PlayerType.human) {
+    if (config.player1.type !== PlayerType.human) {
         player1Game.makeRandomAIMoves(); 
         player1Game.computeScore(); 
     }
-    if (config.player2.type != PlayerType.human) {
+    if (config.player2.type !== PlayerType.human) {
         player2Game.makeRandomAIMoves();
         player2Game.computeScore();  
     }

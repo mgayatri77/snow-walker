@@ -191,7 +191,7 @@ export class Game {
         const currNumRoads = this.getNumPathsUsed();
 
         if (currNumRoads === this.maxRoads){
-            throw new Error("Maximum roads reched!");
+            throw new Error("Maximum roads reached!");
         } 
 
         let road = this.roads?.[this.nodeToString(from)]?.[this.nodeToString(to)];
@@ -428,12 +428,12 @@ export class Game {
     }
     
     makeRandomAIMoves() {
-        if (this.maxRoads != 0) {
+        if (this.maxRoads !== 0) {
             let numRoadsLeft : number = this.maxRoads; 
             // generate paths for each plow randomly
             for (let i = 0; i < this.numPlows; i++) {
                 let pathLength: number = Math.round(numRoadsLeft / (this.numPlows - i)); 
-                if (i == this.numPlows - 1) {
+                if (i === this.numPlows - 1) {
                     pathLength = numRoadsLeft; 
                 }
                 numRoadsLeft -= this.makeRandomPath(i, pathLength); 
@@ -480,8 +480,8 @@ export class Game {
                     pDir = dirs[i];
                 }
             }
-            inGrid = from.x != 0 && from.y != 0 && 
-                from.x != this.gridX && from.y != this.gridY;
+            inGrid = from.x !== 0 && from.y !== 0 && 
+                from.x !== this.gridX && from.y !== this.gridY;
         }
         return pathLength; 
     }   

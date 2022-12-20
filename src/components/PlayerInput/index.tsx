@@ -1,5 +1,5 @@
 import { useReducer, useState } from "react";
-import { Alert, Button, Paper, Grid as MUIGrid, LinearProgress, Snackbar } from '@mui/material';
+import { Alert, Button, Paper, Grid as MUIGrid, LinearProgress, Snackbar, Typography } from '@mui/material';
 
 import { Grid } from '../Grid'
 import { GridConfig } from "../ConfigureGame";
@@ -24,14 +24,17 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
          <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
-                    <MUIGrid item xs={4}>
+                    <MUIGrid item xs={3}>
                         Current Score: {game.getScore()}
                     </MUIGrid>
-                    <MUIGrid item xs={4}>
+                    <MUIGrid item xs={3}>
                         Current Player: {playerName}
                     </MUIGrid>
-                    <MUIGrid item xs={4}>
-                        Current Plow: {processedPlows}
+                    <MUIGrid item xs={3}>
+                        <Typography>Current Plow:  {processedPlows} / {numPlows} </Typography>
+                    </MUIGrid>
+                    <MUIGrid item xs={3}>
+                        <Typography>Road Budget Used:  {game.getNumPathsUsed()} / {game.maxRoads} </Typography>
                     </MUIGrid>
                     <MUIGrid item xs={12}>
                         <LinearProgress variant="determinate" value={100*processedPlows/numPlows} />
