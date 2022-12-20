@@ -79,6 +79,7 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
                             onRoadClick={(from, to,)=> {
                                 try {
                                     game.addPlowPath(processedPlows, from, to);
+                                    game.computeScore();
                                     setAlert({hasAlert: false, text: ''})
                                 } catch (error: any) {
                                     setAlert({hasAlert: true, text: error.message})

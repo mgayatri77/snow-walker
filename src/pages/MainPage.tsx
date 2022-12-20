@@ -17,11 +17,11 @@ export const MainPage = () => {
     const [currentStage, setCurrentStage] = useState(Stage.Config);
     const [gameConfig, setGameConfig] = useState<GameConfig>({
         grid: {
-            x: 0,
-            y: 0,
+            x: 8,
+            y: 8,
         },
-        maxRoads: 0,
-        numPlows: 0,
+        maxRoads: 30,
+        numPlows: 4,
         player1: {},
         player2: {}
     });
@@ -49,7 +49,7 @@ export const MainPage = () => {
                 }}/>
             );
         case Stage.Player1:               
-            if (gameConfig.player1.type !== PlayerType.human){
+            if (gameConfig.player1.type !== PlayerType.human) {
                 setCurrentStage(Stage.Player2)
                 // TODO: Call AI to make moves on the game
                 break;

@@ -3,8 +3,7 @@ import { Alert, Snackbar, TextField, Button, Paper, Grid, MenuItem } from '@mui/
 
 export enum PlayerType {
     human,
-    spiralAI,
-    otherAI
+    RandomAI,
 }
 
 export type PlayerConfig = {
@@ -30,10 +29,10 @@ type ConfigureGameProps = {
 };
 
 export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
-    const [gridX, setGridX] = useState(0);
-    const [gridY, setGridY] = useState(0);
-    const [numPlows, setNumPlows] = useState(0);
-    const [maxRoads, setMaxRoads] = useState(0);
+    const [gridX, setGridX] = useState(8);
+    const [gridY, setGridY] = useState(8);
+    const [numPlows, setNumPlows] = useState(4);
+    const [maxRoads, setMaxRoads] = useState(30);
     const [player1, setPlayer1] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [player2, setPlayer2] = useState<PlayerConfig>({name: '', type: PlayerType.human});
     const [alert, setAlert] = useState({ text: '', hasAlert: false });
@@ -117,7 +116,7 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             value={player1.type}
                             onChange={(event) => {
                                 if (event.target.value !== 'human')
-                                    setPlayer1({name: '', type: event.target.value});
+                                    setPlayer1({name: 'AI', type: event.target.value});
                                 else
                                     setPlayer1({...player1, type: event.target.value})}}
                             style={{width: "100%"}}
@@ -155,7 +154,7 @@ export const ConfigureGame = ({onSubmit}: ConfigureGameProps) => {
                             value={player2.type}
                             onChange={(event) => {
                                 if (event.target.value !== 'human')
-                                    setPlayer2({name: '', type: event.target.value});
+                                    setPlayer2({name: 'AI', type: event.target.value});
                                 else
                                     setPlayer2({...player2, type: event.target.value})}}
                             style={{width: "100%"}}

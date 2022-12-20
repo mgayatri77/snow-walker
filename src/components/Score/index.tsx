@@ -14,6 +14,14 @@ export type ScoreProps = {
 }
 
 export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => {
+    if (config.player1.type != PlayerType.human) {
+        player1Game.makeRandomAIMoves(); 
+        player1Game.computeScore(); 
+    }
+    if (config.player2.type != PlayerType.human) {
+        player2Game.makeRandomAIMoves();
+        player2Game.computeScore();  
+    }
 
     const player1Scores = player1Game.getMaxDistances();
     const player2Scores = player2Game.getMaxDistances();
@@ -45,10 +53,10 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player1.type === PlayerType.human? config.player1.name : config.player1.type} Score: {player1Game.getScore()}
+                        {config.player1.name} Score: {player1Game.getScore()}
                     </MUIGrid>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player2.type === PlayerType.human? config.player2.name : config.player2.type} Score: {player2Game.getScore()}
+                        {config.player2.name} Score: {player2Game.getScore()}
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 
