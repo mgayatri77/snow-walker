@@ -7,9 +7,9 @@ $team = "Checkmate";
 $instruction = <<<EOD
 <p> Welcome to Grid City! </p>
 <p> Grid City is a small planned city laid out as a grid with streets going north-south and east-west. There is one building per city block. The grid has suffered a snow storm and the Snow Clearing Department (GridClear) wishes to make it possible to reach each city block. </p> 
-<p>The head of GridClear consults you to help plan the plow paths such that for any two adjacent (north, south, east, west, and any diagonal) buildings, a resident will need to travel over only a few streets/buildings. The "score" of a building is the worst case, i.e. the largest number of such streets/buildings required to go from that building to any adjacent building.</p>
+<p> The head of GridClear consults you to help plan the plow paths such that for any two adjacent (north, south, east, west, and any diagonal) buildings, a resident will need to travel over only a few streets/buildings. The "score" of a building is the worst case, i.e. the largest number of such streets/buildings required to go from that building to any adjacent building. The total or overall score is the the maximum score across all buildings. Note, the lower the score, the better.</p>
 
-</p> <strong> Rules </strong>
+<p> <strong> Rules </strong>
     <p> - Setttings: GridX and GridY must be greater than 1. 
     <p> - Game Play: This is a two player game. Both players must submit plows after which their scores will be displayed. </p>
     <p> - Paths: A small number of paths may have already been cleared by GridClear and will be marked in black and yellow. </p>
