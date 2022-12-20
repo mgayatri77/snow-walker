@@ -20,15 +20,17 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
 
     const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
+    const maxDistances = game.getMaxDistances();
+
     return (
          <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={3}>
-                        Current Score: {game.getScore()}
+                        <Typography>Current Score: {game.getScore()}</Typography>
                     </MUIGrid>
                     <MUIGrid item xs={3}>
-                        Current Player: {playerName}
+                        <Typography>Current Player: {playerName}</Typography>
                     </MUIGrid>
                     <MUIGrid item xs={3}>
                         <Typography>Current Plow:  {processedPlows} / {numPlows} </Typography>
@@ -50,10 +52,16 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
                         <Grid 
                             x={grid.x}
                             y={grid.y}
-                            renderBuilding={(node) =>  (<div 
-                                key={`building-player-input-${node.x}-${node.y}`} 
-                                style={{backgroundColor: "#5c82e0", borderRadius: "5%"}}
-                            />)}
+                            renderBuilding={(node) =>  (
+                                <div 
+                                    key={`building-player-input-${node.x}-${node.y}`} 
+                                    style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
+                                >
+                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>
+                                        <Typography>{maxDistances[node.x][node.y]}</Typography>
+                                    </p>
+                                </div>
+                            )}
                             roadStyle={(from, to) =>  {
                                 const road = game.getRoad(from, to);
                                 if (road?.fixed) {

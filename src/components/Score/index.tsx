@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Paper, Grid as MUIGrid, Alert } from '@mui/material';
+import { Button, Paper, Grid as MUIGrid, Alert, Typography } from '@mui/material';
 
 import { Grid } from '../Grid'
 import { GameConfig, PlayerType } from "../ConfigureGame";
@@ -53,10 +53,10 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
             <Paper elevation={4} >
                 <MUIGrid container spacing={2} style={{padding: "10%"}}>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player1.name} Score: {player1Game.getScore()}
+                        <Typography>{config.player1.name} Score: {player1Game.getScore()}</Typography>
                     </MUIGrid>
                     <MUIGrid item xs={6} style={{textAlign: 'center'}}>
-                        {config.player2.name} Score: {player2Game.getScore()}
+                        <Typography>{config.player2.name} Score: {player2Game.getScore()}</Typography>
                     </MUIGrid>
                     <MUIGrid item xs={6}>
                         <Grid 
@@ -67,7 +67,9 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                     key={`building-score-player-1-${node.x}-${node.y}`} 
                                     style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
                                 >
-                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{player1Scores[node.x][node.y]}</p>
+                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>
+                                        <Typography>{player1Scores[node.x][node.y]}</Typography>
+                                    </p>
                                 </div>
                             )}
                             roadStyle={(from, to) =>  {
@@ -105,7 +107,9 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                     key={`building-score-player-2-${node.x}-${node.y}`} 
                                     style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
                                 >
-                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>{player2Scores[node.x][node.y]}</p>
+                                    <p style={{flex: "0 0 120px", flexDirection: "row"}}>
+                                        <Typography>{player2Scores[node.x][node.y]}</Typography>
+                                    </p>
                                 </div>
                             )}
                             roadStyle={(from, to) =>  {
