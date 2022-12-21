@@ -344,7 +344,7 @@ export class Game {
             for (let j = 0; j < this.gridY; ++j) {
                 // run BFS from Building at i, j
                 let distances = this.runBfs(i, j, Infinity);
-                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
+                let dirs = [[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]
                 // loop over adjacent buildings
                 for (let d = 0; d < dirs.length; ++d) {
                     let x = i + dirs[d][0]; 
@@ -366,7 +366,7 @@ export class Game {
             for (let j = 0; j < this.gridY; ++j) {
                 // run BFS from Building at i, j
                 let distances = this.runBfs(i, j, 0);
-                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
+                let dirs = [[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]
                 // loop over adjacent buildings
                 for (let d = 0; d < dirs.length; ++d) {
                     let x = i + dirs[d][0]; 
