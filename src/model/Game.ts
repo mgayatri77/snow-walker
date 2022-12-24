@@ -85,9 +85,14 @@ export class Game {
                 (startX + deltaX > this.gridX) ||
                 (startX + deltaX < 0) ||
                 (startY + deltaY > this.gridY) ||
-                (startY + deltaY < 0)
-            )
+                (startY + deltaY < 0) ||
+                (startX == 0 && deltaX == 0) ||
+                (startY == 0 && deltaY == 0) ||
+                (startX == this.gridX && deltaX == 0) ||
+                (startY == this.gridY && deltaY == 0) 
+            ) {
                 continue;
+            }
 
             let endX = startX + deltaX;
             let endY = startY + deltaY;
