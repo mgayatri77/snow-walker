@@ -23,28 +23,46 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
         player2Game.computeScore();  
     }
 
-    const player1Scores = player1Game.getMaxDistances();
-    const player2Scores = player2Game.getMaxDistances();
+    const player1MaxPathData = player1Game.getMaxPathData(); 
+    const player1Scores = player1MaxPathData.distances; 
+    const player2MaxPathData = player2Game.getMaxPathData(); 
+    const player2Scores = player2MaxPathData.distances; 
 
     const winner = () => {
         const score1 = player1Game.getScore();
         const score2 = player2Game.getScore()
         if (score1 === score2){
-            const pathsUsed1 = player1Game.getNumPathsUsed();
-            const pathsUsed2 = player2Game.getNumPathsUsed();
-            
-            if (pathsUsed1 === pathsUsed2){
-                return "Game ended in a tie :/";
-            } else if (pathsUsed1 > pathsUsed2) {
-                return `${config.player2.name} wins by tie breaker, with a score of ${score2} and ${pathsUsed2} paths!`;
-            } else {
-                return `${config.player1.name} wins by tie breaker, with a score of ${score1} and ${pathsUsed1} paths!`;
+            if (score1 === Infinity || score2 === Infinity) {
+                return "Both scores are Infinity, Game ends in a tie :/";
             }
-
+            const sumScores1 = player1Scores
+                                .reduce(function(a,b) {return a.concat(b)}) // flatten array
+                                .reduce(function(a,b) {return a + b}); 
+            const sumScores2 = player2Scores
+                                .reduce(function(a,b) {return a.concat(b)}) // flatten array
+                                .reduce(function(a,b) {return a + b});
+            
+            if (sumScores1 == sumScores2) {
+                const pathsUsed1 = player1Game.getNumPathsUsed();
+                const pathsUsed2 = player2Game.getNumPathsUsed();
+                if (pathsUsed1 === pathsUsed2){
+                    return "Game ends in a tie :/";
+                } else if (pathsUsed1 > pathsUsed2) {
+                    return `${config.player2.name} wins by tie breaker, with Overall score = ${score2}, Sum of scores = ${sumScores1} and ${pathsUsed2} Roads Plowed!`;
+                } else {
+                    return `${config.player1.name} wins by tie breaker, with Overall score = ${score1}, Sum of scores = ${sumScores2} and ${pathsUsed1} Roads Plowed!`;
+                }    
+            }
+            else if (sumScores1 > sumScores2) {
+                return `${config.player2.name} wins by tie breaker, with Overall score = ${score2} and Sum of scores = ${sumScores2}!`; 
+            } 
+            else {
+                return `${config.player2.name} wins by tie breaker, with Overall score = ${score2} and Sum of scores = ${sumScores1}!`;
+            }
         } else if (score1 > score2) {
-            return `${config.player2.name} wins the game with a score of ${score2}!`;
+            return `${config.player2.name} wins the game with an Overall score of ${score2}!`;
         } else {
-            return `${config.player1.name} wins the game with a score of ${score1}!`;
+            return `${config.player1.name} wins the game with an Overall score of ${score1}!`;
         }
     }
 

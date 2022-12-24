@@ -20,8 +20,10 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
 
     const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
-    const maxDistances = game.getMaxDistances();
-
+    const maxPathData = game.getMaxPathData(); 
+    const maxPaths = maxPathData.paths; 
+    const maxDistances = maxPathData.distances; 
+    
     return (
          <div style={{width: "100vw", height: "100vh", display: "flex", flexGrow: "1", alignItems: "center", justifyContent: "center"}}>
             <Paper elevation={4} >
@@ -56,6 +58,10 @@ export const PlayerInput = ({playerName, grid, numPlows, game, onEnd}: PlayerInp
                                 <div 
                                     key={`building-player-input-${node.x}-${node.y}`} 
                                     style={{backgroundColor: "#5c82e0", borderRadius: "5%", display: "flex", textAlign: "center", justifyContent: "center", alignItems: "center"}}
+                                    onClick={() => {
+                                        console.log(node.x, node.y);
+                                        console.log(maxPaths[node.x][node.y]);
+                                    }}
                                 >
                                     <p style={{flex: "0 0 120px", flexDirection: "row"}}>
                                         <Typography>{maxDistances[node.x][node.y]}</Typography>

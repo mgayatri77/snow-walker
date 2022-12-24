@@ -3,6 +3,11 @@ export type Node = {
     y: number;
 };
 
+export type PathData = {
+    distances: number[][]; 
+    paths: Node[][][];
+}
+
 export type Road = {
     from: Node,
     to: Node,
@@ -71,11 +76,10 @@ export class Game {
         let i = 0;
         while (i < this.gridX*this.gridY*percentCleared){
             const startX = randomInt(this.gridX);
-            const startY = randomInt(this.gridY);
+            const startY = randomInt(this.gridY); 
 
             const deltaX = (randomInt(2)-1);
             const deltaY = (randomInt(2)-1);
-
             if (
                 (deltaX === 0 && deltaY === 0) ||
                 (deltaX === 1 && deltaY === 1) ||
@@ -85,9 +89,14 @@ export class Game {
                 (startX + deltaX > this.gridX) ||
                 (startX + deltaX < 0) ||
                 (startY + deltaY > this.gridY) ||
-                (startY + deltaY < 0)
-            )
+                (startY + deltaY < 0) ||
+                (startX == 0 && deltaX == 0) ||
+                (startY == 0 && deltaY == 0) ||
+                (startX == this.gridX && deltaX == 0) ||
+                (startY == this.gridY && deltaY == 0) 
+            ) {
                 continue;
+            }
 
             let endX = startX + deltaX;
             let endY = startY + deltaY;
@@ -322,66 +331,57 @@ export class Game {
             this.score = Infinity;
         }
         else {
-            this.score = this.getMaxDistance();
+            let maxPathData: PathData = this.getMaxPathData();
+            let distances: number[][] = maxPathData.distances; 
+            let maxRowDistances: number[] = distances.map(function(row) { 
+                return Math.max.apply(Math, row); }
+            );
+            this.score = Math.max.apply(null, maxRowDistances); 
         }
     }
 
     areBuildingsConnected() : boolean {
         // run BFS from top left building
-        let distances: number[][] = this.runBfs(0, 0, Infinity);   
+        let pathData: PathData = this.runBfs(0, 0, Infinity); 
+        let distances: number[][] = pathData.distances;   
 
         // check if every building was visited (distance set to < Infinity)
         let infiniteDistance = distances.some(row => row.includes(Infinity)); 
         return (infiniteDistance === false);
     }
 
-    getMaxDistances() : number[][] {
+    getMaxPathData(init_dist=Infinity) : PathData {
         let maxDistances: number[][] = Array.from({length: this.gridX}, () =>
             Array.from({length: this.gridY}, () => 0)
         );
-        
+        let maxPaths: Node[][][] = Array.from({length: this.gridX}, () =>
+            Array.from({length: this.gridY}, () => [])
+        );
+
         for (let i = 0; i < this.gridX; ++i) {
             for (let j = 0; j < this.gridY; ++j) {
                 // run BFS from Building at i, j
-                let distances = this.runBfs(i, j, Infinity);
-                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
+                let pathData: PathData = this.runBfs(i, j, init_dist); 
+                let distances: number[][] = pathData.distances;   
+                let dirs = [[1,0],[0,1],[-1,0],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]
                 // loop over adjacent buildings
                 for (let d = 0; d < dirs.length; ++d) {
                     let x = i + dirs[d][0]; 
                     let y = j + dirs[d][1]; 
                     // update max distance to adjacent building if needed
                     if (this.isValidBuilding(x, y)) {
-                        maxDistances[i][j] = Math.max(maxDistances[i][j], distances[x][y]);
+                        if (distances[x][y] > maxDistances[i][j]) {
+                            maxDistances[i][j] = distances[x][y];
+                            maxPaths[i][j] = pathData.paths[x][y];
+                        }
                     }
                 }
             }
         }
-
-        return maxDistances;
+        return {distances: maxDistances, paths: maxPaths}
     }
 
-    getMaxDistance() : number {
-        let maxDistance: number = 0; 
-        for (let i = 0; i < this.gridX; ++i) {
-            for (let j = 0; j < this.gridY; ++j) {
-                // run BFS from Building at i, j
-                let distances = this.runBfs(i, j, 0);
-                let dirs = [[-1,0],[0,-1],[1,0],[0,1]]
-                // loop over adjacent buildings
-                for (let d = 0; d < dirs.length; ++d) {
-                    let x = i + dirs[d][0]; 
-                    let y = j + dirs[d][1]; 
-                    // update max distance to adjacent building if needed
-                    if (this.isValidBuilding(x, y)) {
-                        maxDistance = Math.max(maxDistance, distances[x][y]);
-                    }
-                }
-            }
-        }
-        return maxDistance;  
-    }
-
-    runBfs(i: number, j: number, init_dist: number) : number[][] {
+    runBfs(i: number, j: number, init_dist: number) : PathData {
         // data structures to run BFS
         let queue: number[][] = []; 
         let visited: boolean[][] = Array.from({length: this.gridX}, () =>
@@ -390,6 +390,9 @@ export class Game {
         let distances: number[][] = Array.from({length: this.gridX}, () =>
             Array.from({length: this.gridY}, () => init_dist)
         );
+        let paths: Node[][][] = Array.from({length: this.gridX}, () => 
+            Array.from({length: this.gridY}, () => [])
+        ); 
 
         // push source to queue
         queue.push([i, j]); 
@@ -419,12 +422,15 @@ export class Game {
                             } else {
                                 distances[bx][by] = distances[next[0]][next[1]] + 1; 
                             } 
+                            let parent: Node = {x: next[0], y: next[1]};
+                            paths[bx][by] = paths[next[0]][next[1]].slice()
+                            paths[bx][by].push(parent); 
                         }
                     }
                 }
             }
         }
-        return distances; 
+        return {distances: distances, paths: paths};
     }
     
     makeRandomAIMoves() {
@@ -453,9 +459,7 @@ export class Game {
         let pDir : number[] = [firstRoad[0].x-firstRoad[1].x, firstRoad[0].y-firstRoad[1].y];
         let from : Node = firstRoad[1]; 
 
-        while (pathLength < maxPathLength
-            && pathAdded
-            && inGrid) {
+        while (pathLength < maxPathLength && pathAdded && inGrid) {
             let dirs : number[][] = [[1, 0], [0, 1], [-1, 0], [0, -1]]
             .map(value => ({ value, sort: Math.random() }))
             .sort((a, b) => a.sort - b.sort)
@@ -488,7 +492,8 @@ export class Game {
 
     // loop over edges to choose starting point
     chooseStartingRoad() : Node[] {
-        let distances: number[][] = this.getMaxDistances(); 
+        let maxPathData: PathData = this.getMaxPathData();
+        let distances: number[][] = maxPathData.distances;
         let startNodes: Node[][] = [];
         let zeroNodes: Node[][] = []; 
         for (let i = 1; i < this.gridX; ++i) {
