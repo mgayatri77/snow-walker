@@ -23,8 +23,10 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
         player2Game.computeScore();  
     }
 
-    const player1Scores = player1Game.getMaxDistances();
-    const player2Scores = player2Game.getMaxDistances();
+    const player1MaxPathData = player1Game.getMaxPathData(); 
+    const player1Scores = player1MaxPathData.distances; 
+    const player2MaxPathData = player2Game.getMaxPathData(); 
+    const player2Scores = player2MaxPathData.distances; 
 
     const winner = () => {
         const score1 = player1Game.getScore();
