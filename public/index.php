@@ -8,9 +8,12 @@ $instruction = <<<EOD
 <p> Welcome to Grid City! </p>
 <p> Grid City is a small planned city laid out as a grid with streets going north-south and east-west. There is one building per city block. The grid has suffered a snow storm and the Snow Clearing Department (GridClear) wishes to make it possible to reach each city block. </p> 
 <p> The head of GridClear consults you to help plan the plow paths such that for any two adjacent (north, south, east, west, and any diagonal) buildings, a resident will need to travel over only a few streets/buildings. The "score" of a building is the worst case, i.e. the largest number of such streets/buildings required to go from that building to any adjacent building.</p>
-<p> The total or overall score is the the maximum score across all buildings. The player with the lower overall score wins. If overall scores are equal, then the player with the lower sum of scores over all buildings wins. If the sum of scores is equal, then the player who plowed fewer roads wins. If that is equal as well, then the game is a tie.</p>
+<p> The total or overall score is the the maximum score across all buildings.</p>
 
 <p> <strong> Rules </strong>
+    <p> - Deciding Winner: The player with the lower overall score wins. 
+    <p> - Tiebreaker 1: If overall scores are tied, the player with the lower sum of scores over all buildings wins. 
+    <p> - Tiebreaker 2: If the overall score and sum of scores are tied, the player who plowed fewer roads wins. 
     <p> - Setttings: GridX and GridY must be greater than 1. 
     <p> - Paths: A plow path must begin from the boundaries of the grid. </p>
     <p> - Paths: A plow path cannot go over previously plowed paths. </p> 
