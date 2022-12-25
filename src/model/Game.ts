@@ -3,6 +3,10 @@ export type Node = {
     y: number;
 };
 
+export type NodePath = Node & {
+    status: string;
+}
+
 export type PathData = {
     distances: number[][]; 
     paths: Node[][][];
@@ -39,7 +43,7 @@ export class Game {
         this.score = Infinity;             
     };
 
-    private nodeToString(node: Node) : string {
+    public nodeToString(node: Node) : string {
         return `x:${node.x},y:${node.y}`;
     }
 
@@ -90,10 +94,10 @@ export class Game {
                 (startX + deltaX < 0) ||
                 (startY + deltaY > this.gridY) ||
                 (startY + deltaY < 0) ||
-                (startX == 0 && deltaX == 0) ||
-                (startY == 0 && deltaY == 0) ||
-                (startX == this.gridX && deltaX == 0) ||
-                (startY == this.gridY && deltaY == 0) 
+                (startX === 0 && deltaX === 0) ||
+                (startY === 0 && deltaY === 0) ||
+                (startX === this.gridX && deltaX === 0) ||
+                (startY === this.gridY && deltaY === 0) 
             ) {
                 continue;
             }
@@ -130,6 +134,12 @@ export class Game {
         return roads;
     }
     
+    getNeighbours(x: number, y: number) : number[][] {
+        return [
+            [x + 1, y + 1],[x + 1, y - 1],[x - 1, y + 1],[x - 1, y - 1],
+            [x + 1, y],[x - 1, y],[x, y + 1],[x, y - 1],
+        ];
+    }
     getCorners(x: number, y: number) : number[][] {
         return [[x,y],[x+1,y],[x,y+1],[x+1,y+1]];
     }
@@ -381,6 +391,70 @@ export class Game {
         return {distances: maxDistances, paths: maxPaths}
     }
 
+    getLastBuilding(target: Node, path: Node[]) : Node | undefined {
+        const lastNode : Node = path.at(-1) ?? { x:0, y:0 };
+        const neighbours = this.getNeighbours(lastNode.x, lastNode.y);
+
+        let lastBuilding;
+        for (let i = 0; i < neighbours.length; i++){
+            const [x, y] = neighbours[i];
+            const deltaX = Math.abs(target.x - x);
+            const deltaY = Math.abs(target.y - y);
+
+            if (deltaX <= 1 && deltaY <= 1 && path.filter(tNode => tNode.x === x && tNode.y === y).length === 0){
+                lastBuilding = {x, y};
+            }
+        }
+        
+        return lastBuilding
+    }
+
+    maxPathToWalkingPath(paths: Node[]) : Node[]{
+        const walkingPath : Node[] = [];
+
+        for (let i = 0; i < paths.length - 1; i++){
+            const currNode = paths[i];
+            const nextNode = paths[i+1];
+
+            const [currTL, currTR, currBL, currBR] = this.getCorners(currNode.x, currNode.y);
+
+            const deltaX = currNode.x - nextNode.x;
+            const deltaY = currNode.y - nextNode.y;
+
+            if (deltaX === 1 && deltaY === 1) {
+                walkingPath.push({x: currTL[0], y: currTL[1]});
+            } else if (deltaX === -1 && deltaY === 1) {
+                walkingPath.push({x: currTR[0], y: currTR[1]});
+            } else if (deltaX === 1 && deltaY === -1) {
+                walkingPath.push({x: currBL[0], y: currBL[1]});
+            } else if (deltaX === -1 && deltaY === -1) {
+                walkingPath.push({x: currBR[0], y: currBR[1]});
+            } else if ( deltaX === 0 && deltaY === 1)  {
+                if (this.getRoads({x: currTL[0], y: currTL[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currTL[0], y: currTL[1]});
+                else if (this.getRoads({x: currTR[0], y: currTR[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currTR[0], y: currTR[1]});
+            } else if (deltaX === 0 && deltaY === -1) {
+                if (this.getRoads({x: currBL[0], y: currBL[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currBL[0], y: currBL[1]});
+                else if (this.getRoads({x: currBR[0], y: currBR[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currBR[0], y: currBR[1]});
+            } else if (deltaX === 1 && deltaY === 0) {
+                if (this.getRoads({x: currTL[0], y: currTL[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currTL[0], y: currTL[1]});
+                else if (this.getRoads({x: currBL[0], y: currBL[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currBL[0], y: currBL[1]});
+            } else {
+                if (this.getRoads({x: currTR[0], y: currTR[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currTR[0], y: currTR[1]});
+                else if (this.getRoads({x: currBR[0], y: currBR[1]}).filter(node => node.cleared).length > 0)
+                    walkingPath.push({x: currBR[0], y: currBR[1]});
+            }
+        }
+
+        return walkingPath;
+    }
+
     runBfs(i: number, j: number, init_dist: number) : PathData {
         // data structures to run BFS
         let queue: number[][] = []; 
@@ -430,7 +504,7 @@ export class Game {
                 }
             }
         }
-        return {distances: distances, paths: paths};
+        return {distances, paths};
     }
     
     makeRandomAIMoves() {

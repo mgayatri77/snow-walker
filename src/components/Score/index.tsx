@@ -42,7 +42,7 @@ export const Score = ({config, player1Game, player2Game, onEnd}: ScoreProps) => 
                                 .reduce(function(a,b) {return a.concat(b)}) // flatten array
                                 .reduce(function(a,b) {return a + b});
             
-            if (sumScores1 == sumScores2) {
+            if (sumScores1 === sumScores2) {
                 const pathsUsed1 = player1Game.getNumPathsUsed();
                 const pathsUsed2 = player2Game.getNumPathsUsed();
                 if (pathsUsed1 === pathsUsed2){
